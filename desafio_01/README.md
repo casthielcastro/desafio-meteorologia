@@ -304,7 +304,6 @@ A IA pode ajudar a gerar nomes fictícios, textos de exemplo e sugestões de dis
 **Exemplo**
 
 ```python
-# Generated-by: AI (Gemini / GPT-4 / Claude)
 # AI-Generated-Date: 2026-11-14
 # SPDX-SnippetCopyrightText: AI-Assisted Code
 # SPDX-License-Identifier: MIT
