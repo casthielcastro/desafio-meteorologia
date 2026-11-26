@@ -14,3 +14,8 @@ Cinco figuras foram extraídas sem alteração do arquivo [Guia do código](../o
 | desafio_02/boxplot_condicoes.png | Notebook, boxplot por condição | D2 |
 
 As legendas explicitam que a base é fictícia, o limite IQR é exploratório e a conversão decimal depende da localidade. Figuras que tratam dados simulados como reais, generalizam a exclusão de outliers ou repetem informações foram omitidas. As capturas antigas do Excel ainda não foram incorporadas: a integração não retornou os bytes do DOCX maior e não foi possível confirmar o estado atual da planilha. Os documentos originais permanecem em old.
+
+
+## Figura complementar — média e mediana
+
+- `desafio_02/media_mediana.svg`: versão vetorial minimalista da comparação solicitada, com duas sequências fictícias, cálculos conferidos e destaque da posição central. Produzida para a seção 5 do Guia do Desafio 2. A figura não representa resultados da base oficial.

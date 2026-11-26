@@ -209,6 +209,12 @@ Antes de calcular na base inteira, considere cinco leituras fictícias, em km/h:
 
 Se retirássemos 34 apenas para demonstrar seu efeito, a média cairia para 6,5, mas a mediana permaneceria 6. A mediana é mais resistente a extremos. Isso não significa que 34 seja um erro.
 
+Outra maneira de observar o efeito é substituir somente a maior velocidade, de 34 por 100 km/h, mantendo cinco valores. A figura mostra dois valores antes e dois depois da terceira posição em ambas as sequências.
+
+![Comparação entre média e mediana: ao substituir 34 por 100, a média sobe de 12 para 25,2 km/h e a mediana permanece 6 km/h.](assets/desafio_02/media_mediana.svg)
+
+*Figura — Comparação de duas amostras fictícias. A mediana continua na terceira posição, enquanto a média incorpora a mudança no valor mais alto. A figura usa cinco observações; quando a quantidade é par, a mediana é a média dos dois valores centrais.*
+
 O desvio padrão quantifica a dispersão em torno da média. Subtraímos 12 de cada valor, elevamos as diferenças ao quadrado, somamos 64 + 36 + 36 + 4 + 484 = 624 e dividimos por n−1 (4) para obter a variância amostral 156; a raiz quadrada é aproximadamente 12,49 km/h. O pandas usa essa convenção amostral por padrão. A variância fica em (km/h)², enquanto o desvio padrão tem a unidade original. Não interprete o desvio como limite máximo nem como distância exata de cada leitura.
 
 ### Célula 10 — Automatizar os cálculos
