@@ -3,7 +3,7 @@
 **Projeto:** [desafio-meteorologia](https://github.com/casthielcastro/desafio-meteorologia)  
 **Público-alvo:** estudantes do curso de Analista de Dados da Generation  
 **Finalidade:** documento de referência para criação, revisão e manutenção das três apostilas  
-**Versão:** 1.1 — 26/11/2026
+**Versão:** 1.2 — 26/11/2026
 
 ## 1. Objetivo dos documentos
 
@@ -385,3 +385,8 @@ As apostilas foram publicadas em [Guia 1](../guia_aluno/Guia_Desafio_1.md), [Gui
 | D3: auditoria | Guias anteriores registram média 11,94 e soma 740.166,8; concordância entre métodos não comprova importação correta | Orientar conferência de tipos, filtros, chaves e indicadores |
 
 Escopo da revisão: leitura dos roteiros, esquema meteorológico, código dos notebooks e saídas salvas do Desafio 2, além dos guias anteriores. Não houve execução do Colab ou acesso autenticado à planilha Google. A leitura binária do Excel não retornou conteúdo; o Desafio 3 permanece pendente de inspeção direta e teste de fórmulas, filtros e gráficos. Não declarar validação integral até realizar esses testes. Nenhum notebook ou planilha foi modificado. Os complementos técnicos das apostilas são recomendações identificadas, não alterações já realizadas no projeto.
+
+
+## 18. Reaproveitamento de recursos visuais
+
+Os quatro guias históricos foram arquivados em [guia_aluno/old](../guia_aluno/old/). As novas apostilas incorporam cinco figuras do guia do código e três gráficos das saídas salvas do notebook do Desafio 2, organizados em [assets](../guia_aluno/assets/README.md), com origem, finalidade e ressalvas. Priorizar figuras que esclarecem o raciocínio, sem repetir ilustrações equivalentes. Os dados permanecem fictícios; o IQR não estabelece um alerta real. As capturas antigas do Excel ficaram pendentes de incorporação e confirmação do arquivo atual.

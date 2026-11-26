@@ -26,25 +26,15 @@ Pergunte-se: o que descreve uma estação? O que descreve um evento observado po
 
 As leituras 1 e 2 pertencem à mesma estação. Se a leitura 3 apontasse para a estação 5, não poderíamos localizar seu cadastro. O identificador único de uma tabela é a chave primária (PK); a referência à chave de outra tabela é a chave estrangeira (FK). Essa ligação é chamada integridade referencial.
 
-```mermaid
-erDiagram
-    ESTACOES ||--|{ LEITURAS : registra
-    ESTACOES {
-        int estacao_id PK
-        string pais
-        float latitude
-        int altitude_m
-    }
-    LEITURAS {
-        int leitura_id PK
-        int estacao_id FK
-        datetime data_hora
-        string condicao_tempo
-        float velocidade_vento_kmh
-    }
-```
 
-O diagrama mostra parte das colunas, apenas para evidenciar o relacionamento. O esquema completo é obrigatório:
+
+
+
+![Diagrama de estações e leituras ligadas por estacao_id](assets/compartilhadas/relacionamento_tabelas.png)
+
+*Figura do guia anterior. O intervalo de 1 a 16 leituras por estação e as quantidades representam a base oficial de referência; o número por estação pode variar na geração do Desafio 1.*
+
+O esquema completo é obrigatório:
 
 | Tabela | Coluna | Tipo e finalidade |
 |---|---|---|
@@ -422,6 +412,12 @@ display(tabela_fato.head())
 ```
 
 As sementes são reiniciadas antes da geração definitiva. O zip combina valores na mesma ordem. A dimensão é criada primeiro; o segundo DataFrame recebe informações dela. A ordenação usa a data no formato ano-mês-dia, que permite ordem cronológica; depois renumeramos leitura_id. Esperamos 10.050 e 62.000 linhas, sete e nove colunas respectivamente.
+
+
+
+![Fluxo das células de geração, validação, exportação e envio](assets/desafio_01/fluxo_validacao.png)
+
+*Figura do guia anterior: a validação precisa acontecer antes da exportação e do envio. A etapa de leitura de volta deve verificar os dados efetivamente gravados, conforme o complemento da célula 13.*
 
 ## 8. Valide antes de exportar
 

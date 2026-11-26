@@ -31,6 +31,12 @@ flowchart TD
  F --> G[Recomendar critério e declarar limites]
 ```
 
+
+
+![Diagrama de estações e leituras ligadas por estacao_id](assets/compartilhadas/relacionamento_tabelas.png)
+
+*Figura do guia anterior. O intervalo de 1 a 16 leituras por estação e as quantidades representam a base oficial de referência; o número por estação pode variar na geração do Desafio 1.*
+
 ## 3. Prepare o notebook e carregue os dados
 
 Crie um notebook no Google Colab. Use células de texto para a pergunta, leituras e decisões; use células de código para os cálculos. Execute de cima para baixo. O notebook do projeto está dividido em duas partes.
@@ -248,6 +254,12 @@ Escreva três insights no notebook, um para cada medida obrigatória. Uma estrut
 
 Uma média geral mistura condições diferentes. Imagine duas leituras de sol (8 e 10) e duas de tempestade (30 e 40). A média de sol é 9 e a de tempestade, 35 km/h. A média geral não revela essa diferença. Agrupar significa separar observações por categoria e aplicar um cálculo a cada grupo.
 
+
+
+![A leitura recebe o país da estação pela chave estacao_id](assets/compartilhadas/juncao_estacoes_leituras.png)
+
+*Figura do guia anterior: o merge no Python e a busca no Excel usam a mesma chave para associar a informação do cadastro ao evento.*
+
 ### Célula 11 — Juntar cadastro e eventos
 
 Para comparar por país, o campo pais está em estacoes, enquanto vento está em leituras. Precisamos trazer o cadastro para cada evento.
@@ -321,6 +333,12 @@ Na base do projeto, Q1 = 5,5 e Q3 = 15,8 km/h. IQR = 10,3; limite inferior = −
 lim. inferior  Q1    mediana    Q3          lim. superior
 ```
 Esquema conceitual, não em escala. Os limites não são necessariamente valores observados, e os bigodes de um boxplot terminam nas observações dentro dos limites.
+
+
+
+![Régua da velocidade simulada, com mediana, percentil 90, limite IQR e máximo](assets/compartilhadas/regua_vento.png)
+
+*Figura do guia anterior, baseada nos resultados registrados da base fictícia. A expressão “alerta” na figura designa apenas o critério simulado; marque valores estritamente maiores que 31,25 km/h.*
 
 ### Célula 14 — Calcular o IQR
 
@@ -438,6 +456,12 @@ plt.show()
 ```
 
 
+
+
+![Histograma da velocidade do vento com média e mediana](assets/desafio_02/histograma_vento.png)
+
+*Saída registrada do notebook. A maior concentração fica nas velocidades baixas; a cauda à direita ajuda a explicar a média acima da mediana.*
+
 ### Célula 20 — Boxplot geral
 
 ```python
@@ -452,6 +476,12 @@ plt.show()
 ```
 
 A caixa representa Q1 a Q3; a linha interna é a mediana. Os pontos fora dos bigodes são candidatos a valores extremos. A caixa não representa todos os registros.
+
+
+
+![Boxplot geral da velocidade do vento](assets/desafio_02/boxplot_geral.png)
+
+*Saída registrada do notebook. Compare a mediana, a caixa central e os pontos extremos; estes não são automaticamente erros.*
 
 ### Complemento — Boxplot por condição
 
@@ -469,6 +499,12 @@ plt.show()
 ```
 
 O eixo horizontal mostra as quatro condições e o vertical, velocidade. A linha horizontal destaca o limite IQR global. Observe que a caixa de tempestade é mais alta e mais ampla. Os gráficos reforçam a leitura das tabelas; não são uma validação independente da base.
+
+
+
+![Boxplots do vento por condição meteorológica e limite IQR](assets/desafio_02/boxplot_condicoes.png)
+
+*Saída registrada do notebook. Tempestade apresenta distribuição mais elevada e variável. A linha tracejada é o limite global de 31,25 km/h, não um limite de segurança real.*
 
 ## 10. Escreva uma recomendação fundamentada
 

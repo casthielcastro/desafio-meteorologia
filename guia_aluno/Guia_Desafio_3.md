@@ -33,6 +33,12 @@ flowchart LR
  F --> G[Recomendação]
 ```
 
+
+
+![Diagrama de estações e leituras ligadas por estacao_id](assets/compartilhadas/relacionamento_tabelas.png)
+
+*Figura do guia anterior. O intervalo de 1 a 16 leituras por estação e as quantidades representam a base oficial de referência; o número por estação pode variar na geração do Desafio 1.*
+
 ## 3. Planeje a pasta de trabalho
 
 | Aba | Responsabilidade |
@@ -56,6 +62,12 @@ No Excel para a Web, siga o procedimento do roteiro: abra cada CSV em uma pasta 
 Se o CSV abrir em uma única coluna, utilize Dados > Texto para Colunas (se disponível) e selecione o delimitador adequado. Quando a interface não permitir configurar separadores, utilize a preparação prevista no roteiro: numa cópia em texto, converta delimitadores de vírgula para ponto e vírgula e pontos decimais para vírgulas **somente quando confirmar que esses caracteres são delimitadores ou decimais, e não conteúdo de campos**. Não faça substituição global sobre campos textuais entre aspas ou sobre números já convertidos em datas. Como alternativa, no Excel desktop, Dados > De Texto/CSV permite selecionar delimitador, UTF-8 e converter as colunas numéricas com a localidade apropriada ao ponto decimal, quando disponível.
 
 Cole estacoes em dimensao!A1 e leituras em fato!A1. Confira os cabeçalhos, nomes com acento, datas e números. A primeira leitura registrada no notebook de referência tem vento 8,7, temperatura 1,6 e pressão 986,8. São bons pontos de comparação. Se 1,6 aparecer como data, reimporte a partir do arquivo original; apenas formatar a data como número não recupera o valor.
+
+
+
+![Exemplo de valores decimais interpretados pelo Excel como datas ou textos](assets/desafio_03/importacao_decimal.png)
+
+*Figura do guia anterior: o comportamento ilustrado depende da localidade e do método de importação. Preserve os CSV originais e configure os separadores antes de converter valores.*
 
 ## 5. Transforme os dados em tabelas e confira a qualidade
 
@@ -114,6 +126,12 @@ O país está na dimensão, não na fato. Para filtrar as leituras por país, pr
 | 3 | 2 | 12 | Japão |
 
 Exemplo ilustrativo: a estação 1 pertence a Portugal e a 2 ao Japão. O ID usado na busca é estacao_id, não leitura_id.
+
+
+
+![A leitura recebe o país da estação pela chave estacao_id](assets/compartilhadas/juncao_estacoes_leituras.png)
+
+*Figura do guia anterior: o merge no Python e a busca no Excel usam a mesma chave para associar a informação do cadastro ao evento.*
 
 Crie a coluna pais_dim na primeira coluna vazia ao lado de tbl_fato. Digite:
 
@@ -180,6 +198,12 @@ Quartis delimitam a faixa central dos dados. Esperamos 5,5 e 15,8, IQR 10,3 e li
 Esperado: 2.300. O & monta um critério com o valor de J8; o operador é estritamente maior. Dividindo pelo total, obtemos aproximadamente 3,7%.
 
 Selecione as velocidades na fato e use Página Inicial > Formatação Condicional > regra de maior que, referenciando Relatorio!J8 (ou uma célula auxiliar local vinculada a ela se a interface impedir referência a outra aba). Se disponível, use uma regra por fórmula com referência relativa à primeira célula de dados e absoluta ao limite. Confira se 31,25 não é marcado e se valores superiores são marcados. Não use a cor como único indicador.
+
+
+
+![Régua da velocidade simulada, com mediana, percentil 90, limite IQR e máximo](assets/compartilhadas/regua_vento.png)
+
+*Figura do guia anterior, baseada nos resultados registrados da base fictícia. A expressão “alerta” na figura designa apenas o critério simulado; marque valores estritamente maiores que 31,25 km/h.*
 
 ## 10. Trate texto, vazios e datas
 
