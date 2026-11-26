@@ -3,7 +3,7 @@
 **Projeto:** [desafio-meteorologia](https://github.com/casthielcastro/desafio-meteorologia)  
 **Público-alvo:** estudantes do curso de Analista de Dados da Generation  
 **Finalidade:** documento de referência para criação, revisão e manutenção das três apostilas  
-**Versão:** 1.0 — 26/11/2026
+**Versão:** 1.1 — 26/11/2026
 
 ## 1. Objetivo dos documentos
 
@@ -367,3 +367,21 @@ Estas referências registram a fundamentação pedagógica discutida na definiç
 Ao acompanhar o guia, o estudante deve conseguir compreender o que precisa fazer, por onde começar, o que considerar, como implementar, por que a solução funciona e como verificar se está correta. Deve também desenvolver um raciocínio que possa transferir para outros projetos de análise de dados.
 
 **O objetivo não é ensinar o aluno a copiar o projeto. É ensinar o aluno a construir o projeto.**
+
+## 17. Revisão de aderência à implementação (26/11/2026)
+
+As apostilas foram publicadas em [Guia 1](../guia_aluno/Guia_Desafio_1.md), [Guia 2](../guia_aluno/Guia_Desafio_2.md) e [Guia 3](../guia_aluno/Guia_Desafio_3.md), como Markdown independente. Os PDFs e DOCX anteriores foram preservados como referências; não são versões atualizadas destas apostilas.
+
+| Ponto | Constatação | Tratamento na documentação |
+|---|---|---|
+| D1: volume | Notebook gera 10.050 estações e 62.000 leituras; roteiro exige pelo menos 20.000 somadas | Distinguir mínimo de escolha de implementação |
+| D1: umidade | Gerador limita a 20–100%, mas assert original aceita 0–100% | Recomendar validação alinhada ao esquema |
+| D1: conferência do Sheets | Cabeçalhos e quantidades são lidos da planilha, mas FK é verificada nos DataFrames locais | Acrescentar verificação dos IDs efetivamente gravados |
+| D2: origem e qualidade | Notebook usa base oficial, verifica linhas duplicadas e FK; não testa diretamente unicidade de ambas as PK | Acrescentar verificação de PK e junção many_to_one |
+| D2: recomendação | Saídas salvas contam 2.300 leituras acima de 31,25 km/h; texto arredonda para acima de 31 km/h | Manter critério estrito >31,25 para reproduzir as contagens |
+| D2: interpretação | Comparações descritivas não comprovam causalidade, ausência de efeito geográfico nem risco real | Restringir conclusões à simulação |
+| D3: busca | Roteiro alterna PROCV e PROCX; guia de código usa PROCX com busca binária | Explicar ambos; exigir ordenação crescente para busca binária e confirmar requisito com instrutor |
+| D3: Dashboard | Introdução o chama de diferencial, parte final exige gráficos nessa aba | Incluir Dashboard e explicitar inconsistência |
+| D3: auditoria | Guias anteriores registram média 11,94 e soma 740.166,8; concordância entre métodos não comprova importação correta | Orientar conferência de tipos, filtros, chaves e indicadores |
+
+Escopo da revisão: leitura dos roteiros, esquema meteorológico, código dos notebooks e saídas salvas do Desafio 2, além dos guias anteriores. Não houve execução do Colab ou acesso autenticado à planilha Google. A leitura binária do Excel não retornou conteúdo; o Desafio 3 permanece pendente de inspeção direta e teste de fórmulas, filtros e gráficos. Não declarar validação integral até realizar esses testes. Nenhum notebook ou planilha foi modificado. Os complementos técnicos das apostilas são recomendações identificadas, não alterações já realizadas no projeto.
