@@ -21,21 +21,15 @@ A dimensão estacoes descreve 10.050 estações: estacao_id, nome_estacao, cidad
 
 Cada leitura tem seu próprio ID e pertence a uma estação. Uma estação pode ter várias leituras. As observações não têm intervalo regular. As quatro condições são ensolarado, nublado, chuvoso e tempestade.
 
-```mermaid
-flowchart TD
- A[CSV oficiais] --> B[Conferir tipos, chaves e ausentes]
- B --> C[Medidas gerais do vento]
- C --> D[Comparar condições e países]
- D --> E[Investigar extremos e distribuição]
- E --> F[Interpretar evidências]
- F --> G[Recomendar critério e declarar limites]
-```
+![Fluxo do desafio 2](assets/desafio_02/fluxo_desafio.svg)
+
+*Sequência das etapas do desafio.*
 
 
 
-![Diagrama de estações e leituras ligadas por estacao_id](assets/compartilhadas/relacionamento_tabelas.png)
+![Relacionamento entre estacoes e leituras por estacao_id](assets/compartilhadas/relacionamento_tabelas.svg)
 
-*Figura do guia anterior. O intervalo de 1 a 16 leituras por estação e as quantidades representam a base oficial de referência; o número por estação pode variar na geração do Desafio 1.*
+*Esquema parcial das colunas: cada leitura pertence a uma estação existente.*
 
 ## 3. Prepare o notebook e carregue os dados
 
@@ -262,9 +256,9 @@ Uma média geral mistura condições diferentes. Imagine duas leituras de sol (8
 
 
 
-![A leitura recebe o país da estação pela chave estacao_id](assets/compartilhadas/juncao_estacoes_leituras.png)
+![Exemplo de junção por estacao_id](assets/desafio_02/merge.svg)
 
-*Figura do guia anterior: o merge no Python e a busca no Excel usam a mesma chave para associar a informação do cadastro ao evento.*
+*Dados ilustrativos; o país é associado sem alterar a quantidade de leituras.*
 
 ### Célula 11 — Juntar cadastro e eventos
 
@@ -288,6 +282,10 @@ df_completo.head()
 ```
 
 merge realiza a junção. how="left" conserva todas as leituras, mesmo sem correspondência. left_on e right_on indicam as chaves. Esperamos 62.000 linhas antes e depois. Recomenda-se adicionar validate="many_to_one" à chamada e conferir df_completo["pais"].isna().sum(); deve dar zero. Isso evita duplicações e identifica registros sem cadastro.
+
+![Seis leituras separadas por condição e respectivas médias](assets/desafio_02/groupby.svg)
+
+*Exemplo fictício: o agrupamento separa registros antes do cálculo.*
 
 ### Célula 12 — Comparar condições
 
@@ -342,9 +340,9 @@ Esquema conceitual, não em escala. Os limites não são necessariamente valores
 
 
 
-![Régua da velocidade simulada, com mediana, percentil 90, limite IQR e máximo](assets/compartilhadas/regua_vento.png)
+![Quartis e limites IQR em escala linear](assets/compartilhadas/quartis_iqr.svg)
 
-*Figura do guia anterior, baseada nos resultados registrados da base fictícia. A expressão “alerta” na figura designa apenas o critério simulado; marque valores estritamente maiores que 31,25 km/h.*
+*Valores da base fictícia de referência. O limite superior é exploratório, não um alerta real.*
 
 ### Célula 14 — Calcular o IQR
 
