@@ -5,9 +5,15 @@ Este guia acompanha você desde a leitura dos requisitos até a entrega. Você v
 
 ## 1. O que precisa ser entregue
 
+**Objetivo:** saber o que precisa estar pronto no final, antes de escrever qualquer código.
+
 Na sessão síncrona, conecte o Colab ao Google Sheets, escreva o cabeçalho e dez estações, e leia os dados de volta. Na etapa assíncrona, gere as duas tabelas completas, valide, exporte os CSV, carregue a planilha e confira a entrega. O roteiro original exige pelo menos 20.000 registros somados. A implementação deste tema escolhe 10.050 estações e 62.000 leituras, totalizando 72.050. Entregue o notebook, os dois CSV e a cópia da planilha com os dados no GitHub; envie o link no Canvas.
 
+Com a entrega clara, o próximo passo é entender o que esses dados representam.
+
 ## 2. Entenda o negócio antes de programar
+
+**Objetivo:** entender por que os dados ficam em duas tabelas e como elas se ligam.
 
 Uma rede de estações meteorológicas registra condições do tempo, temperatura, umidade, chuva, vento e pressão. Mais adiante, queremos investigar a partir de qual velocidade um vento se torna incomum na base e em quais condições isso acontece. Neste desafio, porém, ainda não precisamos calcular o limite: precisamos construir dados que permitam essa análise.
 
@@ -54,9 +60,15 @@ O esquema completo é obrigatório:
 | leituras | velocidade_vento_kmh | decimal, km/h |
 | leituras | pressao_hpa | decimal, hPa |
 
+Agora que sabemos quais colunas cada tabela precisa ter, vamos ver as regras que definem os valores dessas colunas.
+
 ## 3. Transforme as regras em um plano
 
+**Objetivo:** descobrir o que depende do quê, para decidir a ordem em que os dados serão gerados.
+
 A documentação não pede valores independentes. O país determina as opções de cidade e coordenadas; a condição meteorológica determina os parâmetros de vento, umidade, chuva, temperatura e pressão. A altitude e a latitude também influenciam parte das medidas. Portanto, a ordem de geração importa.
+
+A dependência mais importante é entre as tabelas. Cada leitura guarda um estacao_id, e esse número só pode ser o ID de uma estação que já existe. Por isso as estações são geradas primeiro. Se gerássemos as leituras antes, elas apontariam para estações que ainda não foram criadas, e a ligação entre as tabelas ficaria quebrada. Além disso, a leitura usa a latitude e a altitude da estação para calcular a temperatura e a pressão, então precisa encontrar esse cadastro pronto.
 
 | Países | Peso de cada país |
 |---|---:|
@@ -81,7 +93,11 @@ Esses percentuais são probabilidades de sorteio, não contagens exatas. Uma cai
 
 *Sequência das etapas do desafio.*
 
+Com o plano pronto, falta preparar o lugar onde o código vai rodar e a planilha que vai receber os dados.
+
 ## 4. Prepare o ambiente e a conexão
+
+**Objetivo:** conectar o Colab à planilha do Google sem expor a credencial.
 
 Crie um repositório público para os desafios conforme o roteiro do curso (projeto_desafios_tecnicos_ad). Abra o [Google Cloud Console](https://console.cloud.google.com/), crie um projeto e ative Google Sheets API e Google Drive API em APIs e serviços > Biblioteca. Em IAM e administração > Contas de serviço, crie uma conta de serviço, sem conceder papéis amplos desnecessários. Abra Chaves > Adicionar chave > Criar nova chave > JSON. Copie o client_email do JSON. Se a organização bloquear chaves, procure o instrutor.
 
@@ -158,9 +174,15 @@ ws.update_title(NOME_TABELA)
 print(sh.title, "|", ws.title, "|", sh.url)
 ```
 
-O ID identifica o arquivo, enquanto ws aponta para uma aba. Confira se o título corresponde ao seu arquivo e se a aba foi renomeada para estacoes. Erro 403 ou SpreadsheetNotFound: confira as APIs, o ID e o compartilhamento com a conta de serviço.
+O ID identifica o arquivo, enquanto ws aponta para uma aba.
+
+> **Ponto de verificação:** o título mostrado é o do seu arquivo e a aba foi renomeada para estacoes. Se aparecer erro 403 ou SpreadsheetNotFound, confira as APIs, o ID e o compartilhamento com a conta de serviço antes de seguir.
+
+A conexão funciona. Agora podemos testar a escrita na planilha com poucos dados.
 
 ## 5. Teste o esquema e gere dez estações
+
+**Objetivo:** montar a função que cria uma estação e testá-la com só dez registros antes de gerar a base inteira.
 
 ### Célula 04 — Escrever cabeçalho
 
@@ -182,7 +204,13 @@ A lista determina a ordem dos valores. values espera uma lista de linhas; por is
 
 Antes de sortear uma estação, precisamos definir seus dados dependentes. Se Portugal for selecionado, a cidade deve vir das opções portuguesas e as coordenadas da caixa de Portugal. Para cada registro, queremos um ID diferente. A função recebe i e devolve um dicionário, isto é, os nomes das colunas associados aos respectivos valores.
 
-Uma função de sorteio comum daria as mesmas chances a todos os países. random.choices recebe pesos: [30,10,...] distribui as probabilidades conforme a documentação. Como retorna uma lista, [0] seleciona o resultado. CAIXA_PAIS[pais] busca os quatro limites da caixa; random.uniform sorteia entre os limites. O Faker inventa cidades brasileiras. A semente fixa ajuda a repetir os sorteios no mesmo ambiente. O formato EST-{i:05d} acrescenta zeros à esquerda do identificador.
+Uma função de sorteio comum daria as mesmas chances a todos os países. random.choices recebe pesos: [30,10,...] distribui as probabilidades conforme a documentação. Como retorna uma lista, [0] seleciona o resultado. CAIXA_PAIS[pais] busca os quatro limites da caixa; random.uniform sorteia entre os limites. O Faker inventa cidades brasileiras. A semente fixa ajuda a repetir os sorteios no mesmo ambiente.
+
+Três detalhes de Python aparecem nessa célula:
+
+- `f"EST-{i:05d}"` é uma f-string. O `f` antes das aspas deixa colocar uma variável entre chaves dentro do texto. O `:05d` completa o número com zeros até ter 5 dígitos: com i = 7, o resultado é EST-00007.
+- `fake.city() if pais == "Brasil" else random.choice(CIDADES_PAIS[pais])` é um if/else numa linha só. Se o país for Brasil, o Faker inventa a cidade; senão, sorteamos uma das cinco cidades da lista do país.
+- `[gerar_linha(i) for i in range(1, 11)]` é um laço for escrito de forma curta. Para cada i de 1 a 10, chama a função e guarda o resultado numa lista. O range(1, 11) para antes do 11, por isso gera exatamente dez números.
 
 No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
 
@@ -288,7 +316,11 @@ ws.append_rows(valores, value_input_option="RAW")
 print(len(valores), "linhas enviadas")
 ```
 
-O laço embutido em linhas chama a função dez vezes. O próximo passo transforma cada dicionário em uma lista na mesma ordem do cabeçalho; append_rows acrescenta as linhas. RAW evita reinterpretar os valores. Se repetir essa célula, haverá registros adicionais: limpe a aba de teste e reescreva o cabeçalho antes de repetir.
+O laço embutido em linhas chama a função dez vezes. O próximo passo transforma cada dicionário em uma lista na mesma ordem do cabeçalho; append_rows acrescenta as linhas. RAW evita reinterpretar os valores.
+
+**Resultado esperado:** o print mostra um dicionário parecido com `{'estacao_id': 1, 'nome_estacao': 'EST-00001', 'cidade': ..., 'pais': ..., 'latitude': ..., 'longitude': ..., 'altitude_m': ...}`, seguido de "10 linhas enviadas". Cidade, país e números dependem do sorteio.
+
+> **Atenção:** se repetir essa célula, haverá registros adicionais. Limpe a aba de teste e reescreva o cabeçalho antes de repetir.
 
 ### Célula 06 — Conferir o que chegou
 
@@ -301,9 +333,13 @@ print("Cabeçalho confere:", valores_lidos[0] == COLUNAS_DIMENSAO)
 print(valores_lidos[:3])
 ```
 
-Espere 11 linhas (um cabeçalho e dez estações), cabeçalho igual e registros coerentes. Abra a planilha para conferir. Se houver 21 linhas, provavelmente o envio de teste ocorreu duas vezes. Corrija agora, não durante a análise.
+> **Ponto de verificação:** espere 11 linhas (um cabeçalho e dez estações), cabeçalho igual e registros coerentes. Abra a planilha para conferir. Se houver 21 linhas, provavelmente o envio de teste ocorreu duas vezes. Corrija agora, não durante a análise.
+
+O cadastro de estações funciona em pequena escala. Agora vamos montar a outra tabela, a das leituras, que depende dele.
 
 ## 6. Construa a tabela de leituras
+
+**Objetivo:** criar a função que gera uma leitura ligada a uma estação existente, respeitando as regras do tempo.
 
 ### Célula 07 — Definir o esquema
 
@@ -338,7 +374,7 @@ O assert interrompe o programa quando sua condição não é verdadeira. Agora o
 
 Imagine três estações com IDs 1, 2 e 3. Se sorteássemos quatro leituras livremente, poderíamos obter 1, 1, 1, 3, deixando a estação 2 sem leitura. Por isso as primeiras leituras percorrem a lista de IDs, e só as demais são sorteadas. Precisamos também consultar latitude e altitude do cadastro, sem sorteá-las novamente.
 
-A condição do tempo é escolhida antes das medidas. AJUSTE_CONDICAO guarda, na ordem, ajuste de temperatura, média e desvio de umidade, escala do vento e ajuste de pressão. A distribuição gama produz muitos ventos baixos e poucos altos; com forma 2, escala 14 gera média teórica 28. A distribuição normal varia em torno de uma média; a exponencial produz muitas chuvas pequenas e poucas grandes. Não é necessário derivar essas distribuições: elas traduzem as regras de simulação fornecidas. A função limita a umidade entre 20 e 100, calcula a temperatura com sazonalidade invertida por hemisfério e efeito diário, e reduz a pressão à medida que a altitude aumenta.
+A condição do tempo é escolhida antes das medidas. AJUSTE_CONDICAO guarda, na ordem, ajuste de temperatura, média e desvio de umidade, escala do vento e ajuste de pressão. A distribuição gama produz muitos ventos baixos e poucos altos. A média teórica é a forma vezes a escala: na tempestade, forma 2 e escala 14 dão 28 km/h; no tempo ensolarado, a escala é 5 e a média fica em 10 km/h. A distribuição normal varia em torno de uma média; a exponencial produz muitas chuvas pequenas e poucas grandes. Não é necessário derivar essas distribuições: elas traduzem as regras de simulação fornecidas. A função limita a umidade entre 20 e 100, calcula a temperatura com sazonalidade invertida por hemisfério e efeito diário, e reduz a pressão à medida que a altitude aumenta.
 
 No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
 
@@ -440,9 +476,17 @@ info_teste = {l["estacao_id"]: (l["latitude"], l["altitude_m"]) for l in linhas}
 print(gerar_linha_fato(1, list(info_teste), info_teste))
 ```
 
-Observe a ordem: estação → localização e data → condição → medidas. O return reúne o registro completo. No teste, confira se o ID existe, se o vento não é negativo e se chuva é zero em tempo seco ou positiva em chuva/tempestade.
+Observe a ordem: estação → localização e data → condição → medidas. O return reúne o registro completo.
+
+**Resultado esperado:** um dicionário com as nove colunas das leituras, como `{'leitura_id': 1, 'estacao_id': 1, 'data_hora': '2025-...', 'condicao_tempo': ..., ...}`. Os valores dependem do sorteio.
+
+> **Ponto de verificação:** o estacao_id está entre 1 e 10 (as estações de teste), o vento não é negativo e a chuva é zero em tempo seco ou positiva em chuvoso/tempestade.
+
+As duas funções funcionam isoladamente. O próximo passo é chamá-las milhares de vezes.
 
 ## 7. Gere a base completa
+
+**Objetivo:** gerar as 10.050 estações e as 62.000 leituras e organizá-las como tabelas.
 
 Agora que o cadastro e o evento funcionam isoladamente, podemos escalá-los. Precisamos organizar milhares de dicionários como tabelas. O DataFrame do pandas representa uma tabela com colunas e linhas. Para a leitura consultar a estação rapidamente, extraímos a lista de IDs e montamos um dicionário que associa cada ID a latitude e altitude.
 
@@ -494,13 +538,15 @@ display(tabela_dim.head())
 display(tabela_fato.head())
 ```
 
-As sementes são reiniciadas antes da geração definitiva. O zip combina valores na mesma ordem. A dimensão é criada primeiro; o segundo DataFrame recebe informações dela. A ordenação usa a data no formato ano-mês-dia, que permite ordem cronológica; depois renumeramos leitura_id. Esperamos 10.050 e 62.000 linhas, sete e nove colunas respectivamente.
+As sementes são reiniciadas antes da geração definitiva. O zip combina valores na mesma ordem. A dimensão é criada primeiro; o segundo DataFrame recebe informações dela. A ordenação usa a data no formato ano-mês-dia, que permite ordem cronológica; depois renumeramos leitura_id.
 
+> **Ponto de verificação:** o print mostra `{'estacoes': 10050, 'leituras': 62000} | total: 72050`. As duas tabelas exibidas têm sete e nove colunas, respectivamente.
 
-
-
+A base existe, mas ainda não sabemos se ela respeita todas as regras. Isso vem antes de exportar.
 
 ## 8. Valide antes de exportar
+
+**Objetivo:** provar, com testes, que a base segue o esquema e as regras do tema, e só então gravar os CSV.
 
 É preciso provar que as regras foram atendidas por verificações, não apenas pela ausência de exceções. Compare nomes e ordem das colunas, unicidade dos IDs, vínculo entre as tabelas, presença de leituras para cada estação, datas e regras meteorológicas. isin verifica se cada valor pertence a um conjunto; all exige que todas as verificações sejam verdadeiras.
 
@@ -547,6 +593,13 @@ print("Todas as validações passaram.")
 display(medias.round(1))
 ```
 
+Para entender a Parte 3:
+
+- `.loc[com_chuva, "precipitacao_mm"]` pega só as linhas em que com_chuva é True e, delas, só a coluna da chuva.
+- O `~` inverte a marca: `~com_chuva` são as linhas ensolaradas ou nubladas.
+- `groupby("condicao_tempo")` separa as leituras por condição antes de calcular. Imagine quatro leituras: ensolarado com 8 e 10 km/h, tempestade com 30 e 40 km/h. O groupby forma dois grupos, e o `.mean()` calcula a média de cada um: 9 para ensolarado e 35 para tempestade. Na base completa acontece o mesmo, só que com quatro grupos e três colunas.
+- `medias.loc["tempestade", "pressao_hpa"]` lê um valor dessa tabela de médias: a linha da tempestade, na coluna da pressão.
+
 **Parte 4 — Gravar e baixar os CSV.** Só chega aqui se todas as regras acima passaram. Grava um arquivo por tabela, lê de volta para conferir e baixa uma cópia.
 
 ```python
@@ -574,7 +627,13 @@ assert tabela_fato["velocidade_vento_kmh"].ge(0).all()
 ```
 Não corrija uma leitura errada manualmente na planilha; investigue a função que a gerou. A comparação da pressão por condição é um teste geral do gerador, mas a altitude domina essa medida; ela não demonstra causalidade. O código exporta sem o índice do pandas, relê cada arquivo e baixa uma cópia. Guarde ambos os CSV gerados para a entrega.
 
+> **Ponto de verificação:** aparece "Todas as validações passaram.", a tabela de médias mostra tempestade com mais vento e umidade e menos pressão que ensolarado, e cada CSV informa 10.050 e 62.000 linhas. Se um assert falhar, a mensagem diz qual regra quebrou: volte à função que gera aquela coluna.
+
+Com a base validada e salva, falta levá-la para a planilha.
+
 ## 9. Envie ao Google Sheets
+
+**Objetivo:** gravar as duas tabelas no Google Sheets em lotes e conferir se tudo chegou.
 
 Uma chamada por registro seria lenta e poderia atingir limites da API. Vamos enviar listas de até 5.000 registros, com pausa de dois segundos. Isso reduz as requisições, mas não garante que a quota nunca seja atingida.
 
@@ -624,7 +683,16 @@ def enviar(sh, df, nome_aba, lote=5000, pausa=2):
     print(f"OK {nome_aba}: {n(len(df))} linhas na planilha")
 ```
 
-A função abre a aba ou cria uma nova; se ela já existir, apaga seu conteúdo, redimensiona e escreve o cabeçalho. Depois transforma a tabela em listas, envia fatias e lê a primeira coluna para conferir a quantidade. Execute somente no arquivo destinado ao desafio.
+A função abre a aba ou cria uma nova; se ela já existir, apaga seu conteúdo, redimensiona e escreve o cabeçalho. Depois transforma a tabela em listas, envia fatias e lê a primeira coluna para conferir a quantidade.
+
+Dois recursos de Python aparecem aqui:
+
+- `try` / `except`: o Python tenta abrir a aba. Se ela não existir, o gspread gera o erro WorksheetNotFound; o except captura esse erro e, em vez de parar o programa, cria a aba.
+- `lambda` cria uma função pequena numa linha só. Aqui, `n(62000)` devolve o texto "62.000", só para a mensagem ficar mais fácil de ler.
+
+`valores[i:i + lote]` pega uma fatia da lista: com lote de 5.000, a primeira volta envia as linhas 0 a 4.999, a segunda, 5.000 a 9.999, e assim por diante.
+
+> **Atenção:** a função apaga o conteúdo da aba antes de enviar. Execute somente no arquivo destinado ao desafio.
 
 ### Célula 12 — Enviar as duas tabelas
 
@@ -682,7 +750,13 @@ assert ids_enviados <= set(fks_enviadas)
 ```
 Os índices 1 e 2 são os números das colunas no Sheets; [1:] ignora o cabeçalho. Abra o arquivo e confira as duas abas e os primeiros registros. Exporte a planilha como .xlsx pelo menu Arquivo > Fazer download > Microsoft Excel.
 
+> **Ponto de verificação:** aparece "A planilha confere com a base gerada." e a lista de abas mostra estacoes e leituras.
+
+Os dados estão gerados, validados e na planilha. Falta reunir os arquivos da entrega.
+
 ## 10. Prepare a entrega
+
+**Objetivo:** conferir os arquivos e entregar sem publicar nenhum segredo.
 
 Registre o uso de IA nos trechos em que foi utilizada, seguindo o formato do roteiro (AI-Generated-Date, SPDX-SnippetCopyrightText e a licença aplicável). Revise as saídas do notebook: não publique tokens, chaves, JSON ou outros segredos. No GitHub, envie o notebook executado, os CSV gerados e a cópia .xlsx. Entregue o link no Canvas.
 

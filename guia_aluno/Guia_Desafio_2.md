@@ -5,13 +5,19 @@ Neste desafio, o trabalho não é gerar dados: é aprender a fazer perguntas sob
 
 ## 1. Entenda a entrega e a pergunta de negócio
 
+**Objetivo:** saber o que entregar e qual pergunta a análise precisa responder.
+
 Na sessão síncrona, carregue e confira os dados, calcule pelo menos média, mediana e desvio padrão de uma coluna relevante e escreva uma frase de insight para cada medida, citando o número. Na etapa assíncrona, compare grupos das duas tabelas, investigue ausentes e outliers, leia a distribuição e escreva uma recomendação apoiada em pelo menos duas medidas. Os gráficos são um diferencial do roteiro; o projeto os inclui. Entregue o notebook pelo GitHub e o link pelo Canvas.
 
 A pergunta adotada no projeto é: **a partir de qual velocidade o vento deveria gerar um alerta para a população, e em quais condições meteorológicas ele costuma aparecer?** Os dados são fictícios; a resposta será um critério de monitoramento simulado, não um limite de segurança real.
 
 Antes de escolher um cálculo, identifique a informação necessária. Para um alerta de vento, a medida principal deve ser `velocidade_vento_kmh`. A condição do tempo permite comparar situações e o país permite investigar diferenças geográficas. Uma média geral, sozinha, não informa quais leituras são incomuns. Precisaremos investigar tanto o centro quanto a dispersão e os extremos.
 
+Com a pergunta definida, vamos ver quais dados temos para respondê-la.
+
 ## 2. Conheça os dados e planeje a análise
+
+**Objetivo:** saber quais arquivos usar, o que cada tabela guarda e em que ordem a análise vai acontecer.
 
 Baixe **os CSV oficiais do repositório**, não os arquivos gerados no Desafio 1:
 - [estacoes.csv](../bases_dados/06-servico-meteorologico/estacoes.csv)
@@ -33,7 +39,11 @@ Cada leitura tem seu próprio ID e pertence a uma estação. Uma estação pode 
 
 ## 3. Prepare o notebook e carregue os dados
 
+**Objetivo:** colocar as duas tabelas oficiais dentro do notebook e confirmar que chegaram inteiras.
+
 Crie um notebook no Google Colab. Use células de texto para a pergunta, leituras e decisões; use células de código para os cálculos. Execute de cima para baixo. O notebook do projeto está dividido em duas partes.
+
+> **Atenção:** o notebook do projeto nasceu de um modelo usado por vários temas do curso. Por isso, alguns comentários do código trazem exemplos de outro tema, como `# ex.: "livros"` ou `# ex.: "emprestimos"`, e citam passos do roteiro, como "Passo 1". Esses comentários não mudam nada no resultado. No nosso tema, os nomes certos são sempre estacoes, leituras e estacao_id.
 
 ### Célula 01 — Importações
 
@@ -142,7 +152,9 @@ print(NOME_TABELA_DIMENSAO, "->", len(df_dimensao), "linhas")
 print(NOME_TABELA_FATO, "->", len(df_fato), "linhas")
 ```
 
-Autorize o acesso ao Drive e envie os dois arquivos oficiais se solicitado. Se já houver arquivos com os mesmos nomes na pasta, o código os reaproveita: confira a origem antes de executar para não misturar com o Desafio 1. read_csv transforma cada arquivo em DataFrame, uma tabela manipulável pelo Python. Esperamos 10.050 e 62.000 linhas. Se FileNotFoundError aparecer, confira nomes e pasta; se houver apenas uma coluna, verifique o separador do arquivo.
+Autorize o acesso ao Drive e envie os dois arquivos oficiais se solicitado. Se já houver arquivos com os mesmos nomes na pasta, o código os reaproveita: confira a origem antes de executar para não misturar com o Desafio 1. read_csv transforma cada arquivo em DataFrame, uma tabela manipulável pelo Python.
+
+> **Ponto de verificação:** aparecem "estacoes -> 10050 linhas" e "leituras -> 62000 linhas". Se FileNotFoundError aparecer, confira nomes e pasta; se houver apenas uma coluna, verifique o separador do arquivo.
 
 ### Células 03 e 04 — Explorar as tabelas
 
@@ -165,7 +177,11 @@ display(df_fato.head())
 
 shape retorna dois números, quantidade de linhas e colunas. head mostra os primeiros cinco registros, não toda a base. A dimensão deve ter sete colunas; a fato, nove. Uma leitura com estacao_id 1 pode ser associada à estação 1, mas leitura_id não é o identificador de estação. Examine os campos e as unidades antes de calcular.
 
+As tabelas estão carregadas. Antes de calcular qualquer coisa, precisamos saber se dá para confiar nelas.
+
 ## 4. Verifique se os dados permitem responder à pergunta
+
+**Objetivo:** encontrar problemas de tipo, ausentes, duplicidades e chaves antes que eles estraguem os cálculos.
 
 Imagine que o vento de uma linha seja texto, ou que uma leitura aponte para uma estação inexistente. O cálculo ou a comparação pode ficar incompleto sem que isso seja percebido. Devemos descobrir esses problemas primeiro.
 
@@ -212,7 +228,11 @@ assert df_fato["velocidade_vento_kmh"].ge(0).all()
 ```
 Se a chave não for única, investigue antes da junção. Não apague registros sem saber por que estão repetidos. Registre em uma célula de texto o que a conferência mostrou.
 
+Os dados passaram na conferência. Agora podemos olhar para a coluna que responde à pergunta: o vento.
+
 ## 5. Entenda o vento típico e sua variação
+
+**Objetivo:** calcular as medidas do vento e entender o que cada uma diz e o que ela não diz.
 
 ### Célula 09 — Escolher a coluna
 
@@ -277,6 +297,8 @@ print("Média - mediana:", round(medidas["Média"] - medidas["Mediana"], 2))
 
 Cada método calcula uma medida sobre a mesma série. mode pode retornar mais de uma moda; o notebook seleciona a primeira. round arredonda a exibição; use os valores originais para critérios e comparações.
 
+> **Atenção:** a moda funciona bem em categorias, como a condição do tempo, mas diz pouco num valor contínuo como o vento. Com uma casa decimal, existem centenas de velocidades diferentes, e a mais repetida pode ser só um acaso do arredondamento. Por isso a moda aparece na tabela, mas não entra na recomendação.
+
 Resultados registrados na execução do projeto:
 
 | Medida | Resultado |
@@ -294,7 +316,11 @@ O que podemos concluir? A média é 2,24 km/h maior que a mediana, sugerindo ass
 
 Escreva três insights no notebook, um para cada medida obrigatória. Uma estrutura útil é número → significado → consequência para a análise. Por exemplo: “A mediana foi 9,70 km/h; metade das leituras não supera esse valor. Ela ajuda a descrever o centro da base, mas não define sozinha um alerta.” Mostre ao instrutor pelo menos uma medida e seu insight.
 
+Já sabemos como é o vento na base inteira. A próxima pergunta é se ele muda conforme a condição do tempo e o país.
+
 ## 6. Compare os grupos
+
+**Objetivo:** juntar as duas tabelas e comparar o vento entre condições do tempo e entre países.
 
 Uma média geral mistura condições diferentes. Imagine duas leituras de sol (8 e 10) e duas de tempestade (30 e 40). A média de sol é 9 e a de tempestade, 35 km/h. A média geral não revela essa diferença. Agrupar significa separar observações por categoria e aplicar um cálculo a cada grupo.
 
@@ -307,6 +333,8 @@ Uma média geral mistura condições diferentes. Imagine duas leituras de sol (8
 ### Célula 11 — Juntar cadastro e eventos
 
 Para comparar por país, o campo pais está em estacoes, enquanto vento está em leituras. Precisamos trazer o cadastro para cada evento.
+
+> **Decisão técnica:** a comparação por condição do tempo não precisa da junção, porque condicao_tempo já está em leituras. Mesmo assim, fazemos a junção primeiro para trabalhar com uma tabela só (df_completo) nas duas comparações e nos gráficos. Como a junção não muda o número de linhas, o resultado por condição é o mesmo.
 
 | leitura_id | estacao_id | vento | país após a junção |
 |---|---:|---:|---|
@@ -325,7 +353,19 @@ print("Linhas da fato:", len(df_fato), "| depois da junção:", len(df_completo)
 df_completo.head()
 ```
 
-merge realiza a junção. how="left" conserva todas as leituras, mesmo sem correspondência. left_on e right_on indicam as chaves. Esperamos 62.000 linhas antes e depois. Recomenda-se adicionar validate="many_to_one" à chamada e conferir df_completo["pais"].isna().sum(); deve dar zero. Isso evita duplicações e identifica registros sem cadastro.
+merge realiza a junção. how="left" conserva todas as leituras, mesmo sem correspondência. left_on e right_on indicam as chaves. suffixes=("", "_dim") resolve nomes repetidos: se uma coluna existir nas duas tabelas, a da fato fica com o nome original e a da dimensão ganha o final _dim. Aqui a única coluna em comum é estacao_id, a própria chave.
+
+> **Ponto de verificação:** "Linhas da fato: 62000 | depois da junção: 62000". Se o número crescer, alguma estação está repetida no cadastro.
+
+**Complemento recomendado:** peça ao pandas para conferir a relação e confira se todas as leituras ganharam um país:
+
+```python
+df_completo = df_fato.merge(df_dimensao, left_on=COLUNA_FK, right_on=COLUNA_ID, how="left",
+                            suffixes=("", "_dim"), validate="many_to_one")
+print("Leituras sem país:", df_completo["pais"].isna().sum())   # esperado: 0
+```
+
+validate="many_to_one" quer dizer "muitas leituras para uma estação". Se alguma estação aparecer duas vezes no cadastro, o merge para com erro em vez de duplicar leituras sem avisar.
 
 ![Seis leituras separadas por condição e respectivas médias](assets/desafio_02/groupby.svg)
 
@@ -367,11 +407,32 @@ display(por_grupo)
 
 A lógica é igual, mudando a categoria para pais, que agora está na tabela unificada. A maior média registrada foi França (12,15) e a menor Chile (11,43): diferença de 0,72 km/h. As médias se aproximam muito mais que as médias por condição. Isso sugere pouca diferenciação entre países nesta análise descritiva, não prova ausência de efeito geográfico.
 
+A condição do tempo separa bem os ventos; o país, quase nada. Agora vamos olhar para os ventos mais fortes, que são o centro da pergunta.
+
 ## 7. Identifique valores incomuns sem apagar informação
+
+**Objetivo:** encontrar a partir de qual velocidade uma leitura é incomum e decidir o que fazer com esses casos.
 
 Um vento muito alto pode ser um erro de registro ou uma observação importante. Como a pergunta investiga vento forte, remover extremos automaticamente comprometeria a análise.
 
 Quartis dividem os dados ordenados em partes: Q1 corresponde ao percentil 25, Q2 à mediana e Q3 ao percentil 75. O intervalo interquartil (IQR) é Q3 − Q1, a largura da metade central. A regra exploratória marca valores abaixo de Q1 − 1,5 × IQR ou acima de Q3 + 1,5 × IQR. Ela não identifica perigos reais nem comprova erros.
+
+Vamos fazer a conta à mão com as mesmas cinco leituras fictícias da seção 5: 4, 6, 6, 10 e 34 km/h, já em ordem.
+
+| Passo | Conta | Resultado |
+|---|---|---:|
+| Q1 (25%) | o valor na 2ª posição | 6 |
+| Mediana (50%) | o valor na 3ª posição | 6 |
+| Q3 (75%) | o valor na 4ª posição | 10 |
+| IQR | 10 − 6 | 4 |
+| Limite inferior | 6 − 1,5 × 4 | 0 |
+| Limite superior | 10 + 1,5 × 4 | 16 |
+
+Com cinco valores, as posições caem certinho. O pandas usa o mesmo método: para o quartil de 25%, calcula a posição 0,25 × (5 − 1) = 1, contando a partir de zero, que é o segundo valor. Na base grande, quando a posição cai entre dois valores, ele faz uma média proporcional entre eles.
+
+Só o 34 passa de 16, então só ele é candidato a outlier. Repare que, se o 34 fosse 100, Q1 e Q3 continuariam 6 e 10, e o limite continuaria 16. O valor extremo não puxa o limite para cima.
+
+> **Decisão técnica:** outra forma comum de marcar extremos é usar a média mais duas ou três vezes o desvio padrão. Só que a média e o desvio padrão são justamente as medidas puxadas pelos valores altos, e o vento desta base é assimétrico, com uma cauda longa para a direita. Os quartis quase não mudam com os extremos, então o IQR dá um limite mais estável para esse tipo de dado. Ele continua sendo uma regra exploratória.
 
 Na base do projeto, Q1 = 5,5 e Q3 = 15,8 km/h. IQR = 10,3; limite inferior = −9,95 e superior = 31,25 km/h.
 
@@ -422,7 +483,7 @@ print("Maiores valores:", serie_numerica.nlargest(5).tolist())
 print("Menores valores:", serie_numerica.nsmallest(5).tolist())
 ```
 
-quantile obtém o percentil em escala de 0 a 1. O filtro entre os limites cria uma série auxiliar, sem apagar os dados originais. O resultado registrado foi 2.300 candidatos, todos acima de 31,25; o limite inferior negativo não marca ventos válidos abaixo de zero. A proporção é aproximadamente 3,7%.
+quantile obtém o percentil em escala de 0 a 1. O filtro entre os limites cria uma série auxiliar, sem apagar os dados originais. No filtro, cada comparação, como `serie_numerica >= limite_inferior`, gera uma marca True ou False para cada leitura. O `&` quer dizer "e": a leitura só fica se as duas comparações forem True. Os parênteses em volta de cada comparação são obrigatórios; sem eles, o Python tenta calcular o `&` antes das comparações e dá erro. O resultado registrado foi 2.300 candidatos, todos acima de 31,25; o limite inferior negativo não marca ventos válidos abaixo de zero. A proporção é aproximadamente 3,7%.
 
 ### Célula 15 — Comparar com e sem extremos
 
@@ -471,7 +532,11 @@ Assim, nublado concentra mais casos absolutos, mas tempestade tem a maior taxa. 
 
 Decisão do projeto: preservar os 2.300 extremos por serem coerentes com a simulação e importantes para a pergunta. Nenhum ausente foi encontrado, portanto não houve imputação. Registre a decisão e as evidências.
 
+Sabemos quantos ventos são incomuns e onde aparecem. Falta entender o formato da distribuição inteira, para ver se o limite faz sentido.
+
 ## 8. Leia a distribuição
+
+**Objetivo:** confirmar com assimetria, percentis e faixas o que a média e a mediana já indicavam.
 
 ### Células 16 a 18 — Assimetria, percentis e faixas
 
@@ -496,7 +561,11 @@ skew estima assimetria; o valor positivo 2,25 indica cauda à direita. quantile 
 
 A primeira faixa, até 31,48 km/h, contém 59.758 leituras; não confunda esse limite de faixa com 31,25, o limite IQR. As cinco contagens registradas são 59.758, 2.088, 135, 17 e 2. A soma deve ser 62.000. A assimetria confirma a leitura da média e mediana, e o percentil mostra que o critério IQR destaca apenas uma fração da base.
 
+Os números estão todos calculados. Os gráficos ajudam a mostrar essas mesmas conclusões para quem vai ler o notebook.
+
 ## 9. Visualize as evidências (diferencial)
+
+**Objetivo:** mostrar a distribuição e a diferença entre as condições em gráficos fáceis de ler.
 
 Um histograma conta observações em intervalos numéricos. O eixo horizontal representa vento; o vertical, quantidade. Uma curva suavizada (kde) ajuda a perceber a forma, mas não substitui as contagens. A linha da média deve ficar à direita da mediana.
 
@@ -566,7 +635,11 @@ O eixo horizontal mostra as quatro condições e o vertical, velocidade. A linha
 
 *Saída registrada do notebook. Tempestade apresenta distribuição mais elevada e variável. A linha tracejada é o limite global de 31,25 km/h, não um limite de segurança real.*
 
+Com tabelas e gráficos prontos, podemos responder à pergunta do início.
+
 ## 10. Escreva uma recomendação fundamentada
+
+**Objetivo:** transformar os resultados numa recomendação que cite números e deixe claras as limitações.
 
 Organize a conclusão em pergunta, evidências numéricas, ação sugerida e limitações. O roteiro exige pelo menos duas medidas. Uma conclusão coerente com os resultados é:
 
@@ -578,6 +651,8 @@ Organize a conclusão em pergunta, evidências numéricas, ação sugerida e lim
 O texto do notebook arredonda a recomendação para “passar de 31 km/h”, embora conte casos acima de 31,25. Aqui mantemos 31,25 e o operador maior que, para que a recomendação corresponda exatamente às contagens e ao relatório do Excel. Alterar o limite exige recalcular a frequência.
 
 ## 11. Confira e entregue
+
+**Objetivo:** rodar tudo de novo, corrigir erros e conferir a entrega.
 
 Se aparecer NameError, confira a ordem das células; KeyError indica nome de coluna incorreto; TypeError pode indicar importação textual; mais linhas após merge sugerem duplicação de chave. Rode o notebook novamente desde o início antes de entregar. Registre o uso de IA conforme o roteiro e revise as conclusões com seus resultados.
 
