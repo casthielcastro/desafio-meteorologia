@@ -19,3 +19,8 @@ As legendas explicitam que a base é fictícia, o limite IQR é exploratório e 
 ## Figura complementar — média e mediana
 
 - `desafio_02/media_mediana.svg`: versão vetorial minimalista da comparação solicitada, com duas sequências fictícias, cálculos conferidos e destaque da posição central. Produzida para a seção 5 do Guia do Desafio 2. A figura não representa resultados da base oficial.
+
+
+## Revisão visual — versão 1.3
+
+Os três fluxos Mermaid foram substituídos por `desafio_01/fluxo_desafio.svg`, `desafio_02/fluxo_desafio.svg` e `desafio_03/fluxo_desafio.svg`. Novas figuras vetoriais: `compartilhadas/relacionamento_tabelas.svg`, `compartilhadas/quartis_iqr.svg`, `desafio_02/merge.svg`, `desafio_02/groupby.svg`, `desafio_03/abas_excel.svg` e `desafio_03/procx.svg`. São adaptações técnicas dos conceitos das figuras anteriores, não cópias dos PNG gerados por IA. Os gráficos estatísticos originais e a figura média/mediana permanecem em uso. Os PNG substituídos ficam preservados como histórico, sem referência nas novas apostilas.

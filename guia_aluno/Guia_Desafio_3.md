@@ -22,22 +22,15 @@ Baixe os arquivos [estacoes.csv](../bases_dados/06-servico-meteorologico/estacoe
 
 O ID da estação é único no cadastro, mas pode repetir nas leituras: uma estação registra vários eventos. A chave primária da fato é leitura_id. A coluna estacao_id da fato é a chave estrangeira. Cada leitura deve encontrar sua estação.
 
-```mermaid
-flowchart LR
- A[estacoes: cadastro] -->|estacao_id| C[fato enriquecida com pais]
- B[leituras: eventos] --> C
- C --> D[Tabela dinâmica]
- C --> E[Indicadores e filtro]
- D --> F[Conferência e gráficos]
- E --> F
- F --> G[Recomendação]
-```
+![Fluxo do desafio 3](assets/desafio_03/fluxo_desafio.svg)
+
+*Sequência das etapas do desafio.*
 
 
 
-![Diagrama de estações e leituras ligadas por estacao_id](assets/compartilhadas/relacionamento_tabelas.png)
+![Relacionamento entre estacoes e leituras por estacao_id](assets/compartilhadas/relacionamento_tabelas.svg)
 
-*Figura do guia anterior. O intervalo de 1 a 16 leituras por estação e as quantidades representam a base oficial de referência; o número por estação pode variar na geração do Desafio 1.*
+*Esquema parcial das colunas: cada leitura pertence a uma estação existente.*
 
 ## 3. Planeje a pasta de trabalho
 
@@ -52,6 +45,10 @@ flowchart LR
 | Dashboard | Indicadores e gráficos para consulta |
 
 Use os endereços já existentes no seu modelo quando forem diferentes dos exemplos deste guia. Os exemplos abaixo adotam B2 como filtro, A5:A8 como condições e J8 como limite. Não sobrescreva cartões ou fórmulas preexistentes sem conferir sua posição.
+
+![Organização funcional das sete abas](assets/desafio_03/abas_excel.svg)
+
+*Cada aba tem uma finalidade; os dados alimentam as conferências e o relatório.*
 
 ## 4. Importe sem alterar os valores
 
@@ -129,9 +126,9 @@ Exemplo ilustrativo: a estação 1 pertence a Portugal e a 2 ao Japão. O ID usa
 
 
 
-![A leitura recebe o país da estação pela chave estacao_id](assets/compartilhadas/juncao_estacoes_leituras.png)
+![Busca exata do país da estação](assets/desafio_03/procx.svg)
 
-*Figura do guia anterior: o merge no Python e a busca no Excel usam a mesma chave para associar a informação do cadastro ao evento.*
+*Exemplo fictício de PROCX por estacao_id.*
 
 Crie a coluna pais_dim na primeira coluna vazia ao lado de tbl_fato. Digite:
 
@@ -201,9 +198,9 @@ Selecione as velocidades na fato e use Página Inicial > Formatação Condiciona
 
 
 
-![Régua da velocidade simulada, com mediana, percentil 90, limite IQR e máximo](assets/compartilhadas/regua_vento.png)
+![Quartis e limites IQR em escala linear](assets/compartilhadas/quartis_iqr.svg)
 
-*Figura do guia anterior, baseada nos resultados registrados da base fictícia. A expressão “alerta” na figura designa apenas o critério simulado; marque valores estritamente maiores que 31,25 km/h.*
+*Valores da base fictícia de referência. O limite superior é exploratório, não um alerta real.*
 
 ## 10. Trate texto, vazios e datas
 

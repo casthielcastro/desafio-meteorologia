@@ -30,9 +30,9 @@ As leituras 1 e 2 pertencem à mesma estação. Se a leitura 3 apontasse para a 
 
 
 
-![Diagrama de estações e leituras ligadas por estacao_id](assets/compartilhadas/relacionamento_tabelas.png)
+![Relacionamento entre estacoes e leituras por estacao_id](assets/compartilhadas/relacionamento_tabelas.svg)
 
-*Figura do guia anterior. O intervalo de 1 a 16 leituras por estação e as quantidades representam a base oficial de referência; o número por estação pode variar na geração do Desafio 1.*
+*Esquema parcial das colunas: cada leitura pertence a uma estação existente.*
 
 O esquema completo é obrigatório:
 
@@ -77,18 +77,9 @@ A documentação não pede valores independentes. O país determina as opções 
 
 Esses percentuais são probabilidades de sorteio, não contagens exatas. Uma caixa geográfica é um retângulo aproximado: não garante que a coordenada fique na cidade ou mesmo em terra firme. A simulação abrange janeiro de 2025 a julho de 2026; as leituras não são periódicas. Não apresente os dados como observações reais.
 
-```mermaid
-flowchart TD
- A[Entender esquema e regras] --> B[Configurar acesso ao Sheets]
- B --> C[Gerar dez estações e testar]
- C --> D[Gerar cadastro completo]
- D --> E[Gerar leituras com IDs existentes]
- E --> F[Validar regras]
- F --> G{Tudo correto?}
- G -- Não --> E
- G -- Sim --> H[Exportar CSV e enviar]
- H --> I[Conferir planilha e entregar]
-```
+![Fluxo do desafio 1](assets/desafio_01/fluxo_desafio.svg)
+
+*Sequência das etapas do desafio.*
 
 ## 4. Prepare o ambiente e a conexão
 
@@ -415,9 +406,7 @@ As sementes são reiniciadas antes da geração definitiva. O zip combina valore
 
 
 
-![Fluxo das células de geração, validação, exportação e envio](assets/desafio_01/fluxo_validacao.png)
 
-*Figura do guia anterior: a validação precisa acontecer antes da exportação e do envio. A etapa de leitura de volta deve verificar os dados efetivamente gravados, conforme o complemento da célula 13.*
 
 ## 8. Valide antes de exportar
 

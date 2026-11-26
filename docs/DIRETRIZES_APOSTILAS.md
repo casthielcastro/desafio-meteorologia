@@ -3,7 +3,7 @@
 **Projeto:** [desafio-meteorologia](https://github.com/casthielcastro/desafio-meteorologia)  
 **Público-alvo:** estudantes do curso de Analista de Dados da Generation  
 **Finalidade:** documento de referência para criação, revisão e manutenção das três apostilas  
-**Versão:** 1.2 — 26/11/2026
+**Versão:** 1.3 — 26/11/2026
 
 ## 1. Objetivo dos documentos
 
@@ -390,3 +390,8 @@ Escopo da revisão: leitura dos roteiros, esquema meteorológico, código dos no
 ## 18. Reaproveitamento de recursos visuais
 
 Os quatro guias históricos foram arquivados em [guia_aluno/old](../guia_aluno/old/). As novas apostilas incorporam cinco figuras do guia do código e três gráficos das saídas salvas do notebook do Desafio 2, organizados em [assets](../guia_aluno/assets/README.md), com origem, finalidade e ressalvas. Priorizar figuras que esclarecem o raciocínio, sem repetir ilustrações equivalentes. Os dados permanecem fictícios; o IQR não estabelece um alerta real. As capturas antigas do Excel ficaram pendentes de incorporação e confirmação do arquivo atual.
+
+
+## 19. Padrão visual técnico e minimalista
+
+Não utilizar blocos Mermaid nas apostilas finais. Fluxos devem ser imagens estáticas, preferencialmente SVG, com fundo neutro, tipografia legível, setas funcionais e textos curtos. Preservar todas as etapas e decisões relevantes. Aplicar os princípios de coerência, sinalização, contiguidade e segmentação: uma finalidade principal por figura, cores com significado, ausência de ícones decorativos, legendas externas e texto alternativo. Verificar nomes de campos, fórmulas, valores, escalas e relações antes da publicação. Preferir gráficos reais do notebook a reconstruções ilustrativas. Evitar duas figuras que expliquem a mesma coisa. Os PNG históricos permanecem preservados; os novos SVG são as versões usadas nas apostilas. Capturas do Excel atual ainda dependem de inspeção direta da planilha.
