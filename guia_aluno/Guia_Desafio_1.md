@@ -99,6 +99,10 @@ O comando instala gspread, que manipula planilhas, e Faker, que gera exemplos fi
 
 ### Célula 02 — Autenticar
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — Importar as bibliotecas.** Traz as ferramentas usadas no notebook: o gspread para a planilha, o Faker para inventar nomes, o pandas para as tabelas e as funções de data.
+
 ```python
 # Bibliotecas usadas ao longo do notebook.
 import json, gspread, random, os, time, math
@@ -111,7 +115,11 @@ from datetime import date, datetime, timedelta
 from google.colab import files
 # O userdata dá acesso às Secrets do Colab (credencial e ID da planilha).
 from google.colab import userdata
+```
 
+**Parte 2 — Entrar com a credencial.** Lê a credencial guardada na Secret do Colab, cria a conexão com o Google e mostra o e-mail da conta para confirmar que deu certo.
+
+```python
 # Lê o conteúdo do JSON da credencial (Secret GCP_SA_JSON) e converte o texto em dicionário.
 info = json.loads(userdata.get("GCP_SA_JSON"))
 
@@ -126,13 +134,21 @@ userdata.get lê a secret, json.loads converte seu texto em uma estrutura de dad
 
 ### Célula 03 — Abrir a planilha
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — O ID da planilha e o nome da aba.** Busca o ID da planilha na Secret e define o nome que a primeira aba vai receber.
+
 ```python
 # Lê o ID da planilha guardado na Secret GS_ID.
 SHEET_ID = userdata.get("GS_ID")
 
 # Nome da tabela dimensão do tema: será o nome da primeira aba da planilha.
 NOME_TABELA = "estacoes"
+```
 
+**Parte 2 — Abrir a planilha e renomear a aba.** Abre a planilha, pega a primeira aba, troca o nome dela para estacoes e mostra o título e o link para você conferir.
+
+```python
 # Abre a planilha pelo ID e seleciona a primeira aba (ws será usada nas próximas células).
 sh = gc.open_by_key(SHEET_ID)
 ws = sh.sheet1
@@ -168,6 +184,10 @@ Antes de sortear uma estação, precisamos definir seus dados dependentes. Se Po
 
 Uma função de sorteio comum daria as mesmas chances a todos os países. random.choices recebe pesos: [30,10,...] distribui as probabilidades conforme a documentação. Como retorna uma lista, [0] seleciona o resultado. CAIXA_PAIS[pais] busca os quatro limites da caixa; random.uniform sorteia entre os limites. O Faker inventa cidades brasileiras. A semente fixa ajuda a repetir os sorteios no mesmo ambiente. O formato EST-{i:05d} acrescenta zeros à esquerda do identificador.
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — Preparar os sorteios.** Cria o gerador de nomes do Faker e fixa as sementes, para os sorteios saírem iguais toda vez que a célula rodar.
+
 ```python
 # Gerador do Faker em português do Brasil (usado nas cidades brasileiras e nas datas).
 fake = Faker("pt_BR")
@@ -175,13 +195,21 @@ fake = Faker("pt_BR")
 # Sementes fixas: a cada execução os valores aleatórios saem iguais (resultado reproduzível).
 Faker.seed(42)
 random.seed(42)
+```
 
+**Parte 2 — Os países e a chance de cada um.** Lista os 15 países e o peso de cada um no sorteio, como pede a documentação. O Brasil aparece em cerca de 30% das estações.
+
+```python
 # Países e pesos definidos na documentação do tema (a soma dá 100).
 PAISES = ["Brasil", "Estados Unidos", "Argentina", "Canadá", "Alemanha", "França",
           "Portugal", "Japão", "Austrália", "México", "África do Sul", "Índia",
           "Reino Unido", "Itália", "Chile"]
 PESOS_PAISES = [30, 10, 6, 6, 6, 6, 5, 5, 5, 5, 4, 4, 3, 3, 2]
+```
 
+**Parte 3 — A área de cada país.** Para cada país, a faixa de latitude e de longitude em que a estação pode ser colocada.
+
+```python
 # Caixa geográfica aproximada de cada país: (latitude mínima, latitude máxima, longitude mínima, longitude máxima).
 CAIXA_PAIS = {
     "Brasil":         (-33.0,   5.0, -73.0, -35.0),
@@ -200,7 +228,11 @@ CAIXA_PAIS = {
     "Itália":         ( 37.0,  47.0,   6.6,  18.5),
     "Chile":          (-55.0, -17.5, -75.6, -67.0),
 }
+```
 
+**Parte 4 — As cidades de cada país.** Cinco cidades por país. Para o Brasil não há lista: o Faker inventa o nome da cidade.
+
+```python
 # Lista de 5 cidades por país (o Brasil usa nomes gerados pelo Faker).
 CIDADES_PAIS = {
     "Estados Unidos": ["Nova York", "Chicago", "Denver", "Seattle", "Miami"],
@@ -218,7 +250,11 @@ CIDADES_PAIS = {
     "Itália":         ["Roma", "Milão", "Nápoles", "Turim", "Florença"],
     "Chile":          ["Santiago", "Valparaíso", "Concepción", "Antofagasta", "Punta Arenas"],
 }
+```
 
+**Parte 5 — A função que monta uma estação.** Sorteia o país primeiro e, a partir dele, escolhe a cidade, as coordenadas e a altitude. Devolve a estação como um dicionário, com o nome de cada coluna.
+
+```python
 def gerar_linha(i):
     # Devolve UM registro fictício de estação, no formato {nome_da_coluna: valor}.
     # "i" é o número da linha e serve de identificador sequencial.
@@ -237,7 +273,11 @@ def gerar_linha(i):
         "longitude": round(random.uniform(lon_min, lon_max), 4),   # dentro da caixa do país
         "altitude_m": random.randint(0, 3499),                     # altitude em metros (0 a 3.499)
     }
+```
 
+**Parte 6 — Testar com 10 estações e enviar.** Gera 10 estações, mostra a primeira para conferir e envia as 10 para a planilha, na mesma ordem do cabeçalho.
+
+```python
 # Gera 10 registros de teste.
 linhas = [gerar_linha(i) for i in range(1, 11)]
 print(linhas[0])
@@ -267,6 +307,10 @@ Espere 11 linhas (um cabeçalho e dez estações), cabeçalho igual e registros 
 
 ### Célula 07 — Definir o esquema
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — O nome e as colunas da tabela de leituras.** Define o nome da segunda aba e a lista exata de colunas das leituras, na ordem da documentação.
+
 ```python
 # Nome da tabela fato do tema: será o nome da segunda aba da planilha.
 NOME_TABELA_FATO = "leituras"
@@ -275,7 +319,11 @@ NOME_TABELA_FATO = "leituras"
 COLUNAS_FATO = ["leitura_id", "estacao_id", "data_hora", "condicao_tempo",
                 "temperatura_c", "umidade_pct", "precipitacao_mm",
                 "velocidade_vento_kmh", "pressao_hpa"]
+```
 
+**Parte 2 — A chave estrangeira.** Diz qual coluna liga a leitura à estação e confere se ela está mesmo na lista de colunas.
+
+```python
 # Coluna da tabela fato que é a chave estrangeira (guarda o ID da tabela dimensão).
 COLUNA_FK = "estacao_id"
 
@@ -292,6 +340,10 @@ Imagine três estações com IDs 1, 2 e 3. Se sorteássemos quatro leituras livr
 
 A condição do tempo é escolhida antes das medidas. AJUSTE_CONDICAO guarda, na ordem, ajuste de temperatura, média e desvio de umidade, escala do vento e ajuste de pressão. A distribuição gama produz muitos ventos baixos e poucos altos; com forma 2, escala 14 gera média teórica 28. A distribuição normal varia em torno de uma média; a exponencial produz muitas chuvas pequenas e poucas grandes. Não é necessário derivar essas distribuições: elas traduzem as regras de simulação fornecidas. A função limita a umidade entre 20 e 100, calcula a temperatura com sazonalidade invertida por hemisfério e efeito diário, e reduz a pressão à medida que a altitude aumenta.
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — As condições do tempo e o efeito de cada uma.** Define as 4 condições com a chance de cada uma e, numa tabela, quanto cada condição muda a temperatura, a umidade, o vento e a pressão.
+
 ```python
 # Condições do tempo e pesos definidos na documentação do tema.
 CONDICOES = ["nublado", "ensolarado", "chuvoso", "tempestade"]
@@ -305,11 +357,19 @@ AJUSTE_CONDICAO = {
     "chuvoso":    (-2.0, 85,  7,  7, -3),
     "tempestade": (-4.0, 92,  5, 14, -8),
 }
+```
 
+**Parte 2 — O período das leituras.** As leituras acontecem entre 01/01/2025 e 31/07/2026.
+
+```python
 # Período simulado das leituras: 01/01/2025 a 31/07/2026.
 INICIO_LEITURAS = datetime(2025, 1, 1)
 FIM_LEITURAS = datetime(2026, 7, 31, 23, 59, 59)
+```
 
+**Parte 3 — Começo da função: estação, data e condição.** Escolhe a estação sem inventar ID, busca a latitude e a altitude dela, sorteia o momento da leitura e a condição do tempo.
+
+```python
 def gerar_linha_fato(i, ids_dim, info_dim):
     # Devolve UMA leitura fictícia, no formato {nome_da_coluna: valor}.
     # "i" é o número da linha; "ids_dim" é a lista de IDs que existem na tabela dimensão;
@@ -323,7 +383,11 @@ def gerar_linha_fato(i, ids_dim, info_dim):
     momento = fake.date_time_between(start_date=INICIO_LEITURAS, end_date=FIM_LEITURAS)
     condicao = random.choices(CONDICOES, weights=PESOS_CONDICOES)[0]
     aj_temp, umid_media, umid_desvio, escala_vento, aj_pressao = AJUSTE_CONDICAO[condicao]
+```
 
+**Parte 4 — Ainda na função: a temperatura.** Calcula a temperatura juntando a latitude, a altitude, a época do ano (invertida no hemisfério sul), a hora do dia e a condição.
+
+```python
     # --- Temperatura: latitude, altitude, época do ano, hora do dia e condição ---
     dia_do_ano = momento.timetuple().tm_yday
     sazonal = 6 * math.cos(2 * math.pi * (dia_do_ano - 196) / 365.25)   # pico em meados de julho no hemisfério norte
@@ -333,7 +397,11 @@ def gerar_linha_fato(i, ids_dim, info_dim):
     diaria = 5 * math.cos(2 * math.pi * (hora - 15) / 24)               # máxima por volta das 15 h
     temperatura = (25 - abs(latitude) / 3 - 0.0065 * altitude
                    + sazonal + diaria + aj_temp + random.gauss(0, 2))
+```
 
+**Parte 5 — Ainda na função: umidade, vento, pressão e chuva.** Cada medida depende da condição do tempo. A chuva só existe em leituras chuvosas ou de tempestade; nas outras, é zero.
+
+```python
     # --- Umidade, vento e pressão dependem da condição ---
     umidade = min(100.0, max(20.0, random.gauss(umid_media, umid_desvio)))
     vento = random.gammavariate(2, escala_vento)
@@ -346,7 +414,11 @@ def gerar_linha_fato(i, ids_dim, info_dim):
         chuva = round(5 + random.expovariate(1 / 7), 1)
     else:
         chuva = 0.0
+```
 
+**Parte 6 — Fim da função: devolver a leitura.** Junta tudo numa leitura, com os nomes das colunas do esquema e os valores arredondados.
+
+```python
     return {
         "leitura_id": i,                                        # identificador (renumerado em ordem cronológica na Célula 09)
         "estacao_id": estacao_id,                               # CHAVE ESTRANGEIRA: um ID que existe na dimensão
@@ -358,7 +430,11 @@ def gerar_linha_fato(i, ids_dim, info_dim):
         "velocidade_vento_kmh": round(vento, 1),                # km/h
         "pressao_hpa": round(pressao, 1),                       # hPa
     }
+```
 
+**Parte 7 — Testar a função.** Gera uma leitura usando as 10 estações de teste, para conferir antes de gerar a base inteira.
+
+```python
 # Teste com as 10 estações de teste da Célula 05.
 info_teste = {l["estacao_id"]: (l["latitude"], l["altitude_m"]) for l in linhas}
 print(gerar_linha_fato(1, list(info_teste), info_teste))
@@ -372,6 +448,10 @@ Agora que o cadastro e o evento funcionam isoladamente, podemos escalá-los. Pre
 
 ### Célula 09 — Gerar as tabelas
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — Quantidades e sementes.** Define quantas estações e quantas leituras gerar e reinicia as sementes, para o resultado se repetir.
+
 ```python
 # Quantidade de linhas de cada tabela (volumetria da documentação). O total precisa ser de pelo menos 20.000.
 N_DIM = 10_050
@@ -380,16 +460,28 @@ N_FATO = 62_000
 # Reinicia as sementes: o resultado fica reproduzível.
 Faker.seed(42)
 random.seed(42)
+```
 
+**Parte 2 — Gerar as estações.** Chama a função de estação 10.050 vezes e monta a tabela.
+
+```python
 # ---- Tabela dimensão: usa a função gerar_linha (Célula 05) ----
 tabela_dim = pd.DataFrame([gerar_linha(i) for i in range(1, N_DIM + 1)], columns=COLUNAS_DIMENSAO)
+```
 
+**Parte 3 — Gerar as leituras.** Prepara a lista de estações e a latitude e a altitude de cada uma, e chama a função de leitura 62.000 vezes.
+
+```python
 # ---- Tabela fato: usa a função gerar_linha_fato (Célula 08) ----
 # ids_dim é a lista de IDs da dimensão GERADA acima: é nela que a fato busca a chave estrangeira.
 ids_dim = list(tabela_dim[COLUNAS_DIMENSAO[0]])
 info_dim = dict(zip(tabela_dim["estacao_id"], zip(tabela_dim["latitude"], tabela_dim["altitude_m"])))
 tabela_fato = pd.DataFrame([gerar_linha_fato(i, ids_dim, info_dim) for i in range(1, N_FATO + 1)], columns=COLUNAS_FATO)
+```
 
+**Parte 4 — Ordenar e conferir.** Coloca as leituras em ordem de data, numera os IDs de novo, guarda as duas tabelas e mostra o tamanho e as primeiras linhas.
+
+```python
 # Ordena as leituras pelo momento e renumera o leitura_id (1, 2, 3...) em ordem cronológica.
 tabela_fato = tabela_fato.sort_values("data_hora", kind="stable").reset_index(drop=True)
 tabela_fato["leitura_id"] = range(1, len(tabela_fato) + 1)
@@ -488,6 +580,10 @@ Uma chamada por registro seria lenta e poderia atingir limites da API. Vamos env
 
 ### Célula 11 — Definir a função de envio
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — Começo da função: preparar a aba.** Usa a aba se ela já existir (apagando o conteúdo) ou cria uma nova, ajusta o tamanho e escreve o cabeçalho.
+
 ```python
 def enviar(sh, df, nome_aba, lote=5000, pausa=2):
     # Formata o número com ponto como separador de milhar (ex.: 62.000).
@@ -503,7 +599,11 @@ def enviar(sh, df, nome_aba, lote=5000, pausa=2):
     # Ajusta o tamanho da aba e grava o cabeçalho na linha 1.
     aba.resize(rows=len(df) + 1, cols=len(df.columns))
     aba.update(range_name="A1", values=[list(df.columns)])
+```
 
+**Parte 2 — Ainda na função: enviar em lotes.** Transforma a tabela em listas e envia de 5.000 em 5.000 linhas, com uma pausa entre os lotes.
+
+```python
     # Converte a tabela em lista de linhas (valor ausente vira texto vazio).
     valores = df.astype(object).where(df.notna(), "").values.tolist()
 
@@ -512,7 +612,11 @@ def enviar(sh, df, nome_aba, lote=5000, pausa=2):
         aba.append_rows(valores[i:i + lote], value_input_option="RAW")
         print(f"  {nome_aba}: {n(min(i + lote, len(valores)))} / {n(len(valores))}")
         time.sleep(pausa)
+```
 
+**Parte 3 — Fim da função: conferir.** Lê a aba de volta e para com um erro se o número de linhas não for igual ao que foi enviado.
+
+```python
     # Lê de volta e confere a quantidade de linhas (sem contar o cabeçalho).
     lidas = len(aba.col_values(1)) - 1
     if lidas != len(df):
@@ -534,18 +638,30 @@ A função é chamada para estacoes e leituras. Acompanhe as mensagens até a co
 
 ### Célula 13 — Conferir a entrega
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — O total de linhas.** Soma as linhas das duas tabelas e confere se passa do mínimo de 20.000.
+
 ```python
 # Soma e exibe a quantidade total de linhas das tabelas.
 total = sum(len(df) for df in BASES_GERADAS.values())
 print("Total de linhas:", f"{total:,}".replace(",", "."))
 assert total >= 20_000, "Abaixo do mínimo (20.000 linhas somadas)."
+```
 
+**Parte 2 — Cabeçalho e quantidade em cada aba.** Lê cada aba da planilha e compara o cabeçalho e o número de linhas com a tabela gerada.
+
+```python
 # Confere os cabeçalhos e a quantidade de registros em cada aba.
 for nome, df in BASES_GERADAS.items():
     w = sh.worksheet(nome)
     assert w.row_values(1) == list(df.columns), f"Cabeçalho diferente em {nome}"
     assert len(w.col_values(1)) - 1 == len(df), f"Contagem diferente em {nome}"
+```
 
+**Parte 3 — A ligação entre as tabelas.** Confere se toda chave estrangeira das leituras existe na tabela de estações e mostra as abas da planilha.
+
+```python
 # Confere o relacionamento: toda chave estrangeira da tabela fato existe na tabela dimensão.
 fk_fato = BASES_GERADAS[NOME_TABELA_FATO][COLUNA_FK]
 ids_dim = BASES_GERADAS[NOME_TABELA][COLUNAS_DIMENSAO[0]]

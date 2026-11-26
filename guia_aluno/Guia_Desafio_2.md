@@ -37,21 +37,37 @@ Crie um notebook no Google Colab. Use células de texto para a pergunta, leitura
 
 ### Célula 01 — Importações
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — Ferramentas de arquivos.** Bibliotecas para esconder avisos técnicos e para trabalhar com pastas e arquivos.
+
 ```python
 # ---------- Bibliotecas: ferramentas prontas que o Python usa ----------
 import warnings                    # esconde avisos técnicos para não distrair
 from pathlib import Path           # manipula caminhos de arquivos e pastas
 import shutil                      # manipula arquivos e pastas (ex.: mover, copiar, apagar)
+```
 
+**Parte 2 — Ferramentas do Colab.** Permitem conectar o Google Drive e enviar arquivos do seu computador para o Colab.
+
+```python
 # Estas linhas servem para trabalhar no Google Colab (conectar ao Drive e enviar arquivos)
 from google.colab import drive     # conecta o Google Drive ao Colab (para ler e salvar arquivos)
 from google.colab import files     # (files) envia arquivos do seu computador para o Colab
+```
 
+**Parte 3 — Análise e gráficos.** O pandas faz as tabelas e as contas; o seaborn e o matplotlib desenham os gráficos.
+
+```python
 # Bibliotecas de análise de dados e de gráficos
 import pandas as pd                # tabelas de dados (DataFrame)
 import seaborn as sns              # gráficos bonitos e simples
 import matplotlib.pyplot as plt    # ajustes nos gráficos (título, linhas...)
+```
 
+**Parte 4 — Configurações dos gráficos.** Deixa todos os gráficos do notebook com o mesmo visual e o mesmo tamanho.
+
+```python
 # ---------- Configurações gerais (valem para todos os gráficos abaixo) ----------
 warnings.filterwarnings("ignore")           # esconde avisos técnicos para não distrair
 sns.set_theme(style="whitegrid")            # deixa todos os gráficos com um visual limpo
@@ -62,7 +78,7 @@ Pandas organiza tabelas e calcula indicadores; seaborn e matplotlib desenham gr�
 
 ### Célula 02 — Carregar CSV
 
-A célula é longa, mas faz quatro coisas em sequência. No notebook, ela continua sendo uma célula só; aqui ela aparece em partes para facilitar a leitura.
+A célula é longa, mas faz cinco coisas em sequência. No notebook, ela continua sendo uma célula só; aqui ela aparece em partes para facilitar a leitura.
 
 **Parte 1 — Nomes das tabelas e conexão com o Drive.** Define o nome das duas tabelas, que precisa ser igual ao nome dos arquivos CSV, e conecta o Google Drive ao Colab.
 
@@ -87,7 +103,7 @@ caminho_dimensao = pasta_dados / f"{NOME_TABELA_DIMENSAO}.csv"
 caminho_fato = pasta_dados / f"{NOME_TABELA_FATO}.csv"
 ```
 
-**Parte 3 — Enviar os arquivos, se faltar algum.** Se um dos CSV não estiver na pasta, abre a janela para você escolher os arquivos e salva cada um com o nome certo. Depois, confere se os dois estão lá antes de seguir.
+**Parte 3 — Enviar os arquivos, se faltar algum.** Se um dos CSV não estiver na pasta, abre a janela para você escolher os arquivos e salva cada um com o nome certo. Um arquivo com nome que não combina com nenhuma tabela é ignorado.
 
 ```python
 # ---------- 3) Se faltar algum arquivo, envia os dois de uma vez e o código separa ----------
@@ -104,14 +120,18 @@ if not caminho_dimensao.exists() or not caminho_fato.exists():
             print(f"{nome_enviado} -> {caminho_fato.name}")
         else:                                                  # nome que não combina com nenhuma tabela
             print(f"Ignorado: {nome_enviado} (o nome não contém '{NOME_TABELA_DIMENSAO}' nem '{NOME_TABELA_FATO}')")
+```
 
+**Parte 4 — Conferir se os dois arquivos estão lá.** Antes de ler, confere se os dois CSV estão na pasta. Se faltar algum, para com uma mensagem dizendo qual.
+
+```python
 # Confere se os dois arquivos estão no Drive antes de ler.
 for caminho in [caminho_dimensao, caminho_fato]:
     if not caminho.exists():
         raise FileNotFoundError(f"Falta o arquivo {caminho.name}. Execute a célula de novo e envie-o.")
 ```
 
-**Parte 4 — Ler os dois arquivos.** Transforma cada CSV numa tabela do pandas (DataFrame) e mostra quantas linhas cada uma tem.
+**Parte 5 — Ler os dois arquivos.** Transforma cada CSV numa tabela do pandas (DataFrame) e mostra quantas linhas cada uma tem.
 
 ```python
 # ---------- 4) Lendo os dois arquivos ----------
@@ -229,6 +249,10 @@ O desvio padrão quantifica a dispersão em torno da média. Subtraímos 12 de c
 
 ### Célula 10 — Automatizar os cálculos
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — Calcular as medidas.** Calcula, de uma vez, as medidas do vento: média, mediana, moda, desvio padrão, variância, mínimo, máximo e amplitude.
+
 ```python
 # Medidas de Tendência central e dispersão.
 medidas = pd.Series({
@@ -242,7 +266,11 @@ medidas = pd.Series({
     "Amplitude": serie_numerica.max() - serie_numerica.min(),
 }).round(2)
 display(medidas)
+```
 
+**Parte 2 — Comparar média e mediana.** Mostra a diferença entre a média e a mediana. Uma diferença grande indica valores extremos puxando a média.
+
+```python
 # Média muito diferente da mediana é sinal de valores extremos ou de dados assimétricos.
 print("Média - mediana:", round(medidas["Média"] - medidas["Mediana"], 2))
 ```
@@ -362,16 +390,28 @@ Esquema conceitual, não em escala. Os limites não são necessariamente valores
 
 ### Célula 14 — Calcular o IQR
 
+No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — Os quartis e o IQR.** Calcula o Q1 (25%), o Q3 (75%) e a distância entre eles, que é o IQR.
+
 ```python
 # Faixa central dos dados: do 1º ao 3º quartil (25% e 75%).
 q1 = serie_numerica.quantile(0.25)
 q3 = serie_numerica.quantile(0.75)
 iqr = q3 - q1
+```
 
+**Parte 2 — Os limites.** A partir do IQR, calcula até onde um valor é considerado normal, para baixo e para cima.
+
+```python
 # Regra usual: fora de [Q1 - 1,5 x IQR ; Q3 + 1,5 x IQR] é candidato a outlier.
 limite_inferior = q1 - 1.5 * iqr
 limite_superior = q3 + 1.5 * iqr
+```
 
+**Parte 3 — Contar e mostrar os extremos.** Conta quantas leituras ficam fora dos limites e mostra os 5 maiores e os 5 menores valores.
+
+```python
 # Cálculo do número de outliers
 sem_outliers = serie_numerica[(serie_numerica >= limite_inferior) & (serie_numerica <= limite_superior)]
 qtd_outliers = serie_numerica.count() - sem_outliers.count()
