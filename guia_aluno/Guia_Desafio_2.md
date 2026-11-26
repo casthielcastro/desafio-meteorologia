@@ -62,6 +62,10 @@ Pandas organiza tabelas e calcula indicadores; seaborn e matplotlib desenham gr�
 
 ### Célula 02 — Carregar CSV
 
+A célula é longa, mas faz quatro coisas em sequência. No notebook, ela continua sendo uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — Nomes das tabelas e conexão com o Drive.** Define o nome das duas tabelas, que precisa ser igual ao nome dos arquivos CSV, e conecta o Google Drive ao Colab.
+
 ```python
 # Nomes das tabelas do seu tema (veja a tabela acima), iguais aos nomes dos arquivos CSV.
 NOME_TABELA_DIMENSAO = "estacoes"   # ex.: "livros"
@@ -69,7 +73,11 @@ NOME_TABELA_FATO = "leituras"           # ex.: "emprestimos"
 
 # ---------- 1) Conectando ao Google Drive ----------
 drive.mount("/content/drive")      # vai pedir autorização na primeira vez
+```
 
+**Parte 2 — Onde os arquivos ficam.** Aponta a pasta do Drive em que os CSV são guardados, cria essa pasta se ela não existir e monta o caminho completo de cada arquivo.
+
+```python
 # ---------- 2) Dizendo onde os arquivos estão guardados ----------
 pasta_dados = Path("/content/drive/MyDrive/Colab Notebooks/desafios/dados")   # pasta onde a base fica guardada no Drive
 pasta_dados.mkdir(parents=True, exist_ok=True)                                # cria a pasta "dados" se faltar
@@ -77,7 +85,11 @@ pasta_dados.mkdir(parents=True, exist_ok=True)                                # 
 # O "/" junta a pasta com o nome do arquivo (o nome vem da variável de cada tabela).
 caminho_dimensao = pasta_dados / f"{NOME_TABELA_DIMENSAO}.csv"
 caminho_fato = pasta_dados / f"{NOME_TABELA_FATO}.csv"
+```
 
+**Parte 3 — Enviar os arquivos, se faltar algum.** Se um dos CSV não estiver na pasta, abre a janela para você escolher os arquivos e salva cada um com o nome certo. Depois, confere se os dois estão lá antes de seguir.
+
+```python
 # ---------- 3) Se faltar algum arquivo, envia os dois de uma vez e o código separa ----------
 if not caminho_dimensao.exists() or not caminho_fato.exists():
     print(f"Selecione os arquivos CSV ({NOME_TABELA_DIMENSAO} e {NOME_TABELA_FATO}). Pode escolher os dois de uma vez:")
@@ -97,7 +109,11 @@ if not caminho_dimensao.exists() or not caminho_fato.exists():
 for caminho in [caminho_dimensao, caminho_fato]:
     if not caminho.exists():
         raise FileNotFoundError(f"Falta o arquivo {caminho.name}. Execute a célula de novo e envie-o.")
+```
 
+**Parte 4 — Ler os dois arquivos.** Transforma cada CSV numa tabela do pandas (DataFrame) e mostra quantas linhas cada uma tem.
+
+```python
 # ---------- 4) Lendo os dois arquivos ----------
 df_dimensao = pd.read_csv(caminho_dimensao)
 df_fato = pd.read_csv(caminho_fato)
