@@ -203,7 +203,7 @@ Antes de calcular na base inteira, considere cinco leituras fictícias, em km/h:
 
 Se retirássemos 34 apenas para demonstrar seu efeito, a média cairia para 6,5, mas a mediana permaneceria 6. A mediana é mais resistente a extremos. Isso não significa que 34 seja um erro.
 
-O desvio padrão quantifica a dispersão em torno da média. Subtraímos 12 de cada valor, elevamos as diferenças ao quadrado, somamos (620) e dividimos por n−1 (4) para obter a variância amostral 155; a raiz quadrada é aproximadamente 12,45 km/h. O pandas usa essa convenção amostral por padrão. A variância fica em (km/h)², enquanto o desvio padrão tem a unidade original. Não interprete o desvio como limite máximo nem como distância exata de cada leitura.
+O desvio padrão quantifica a dispersão em torno da média. Subtraímos 12 de cada valor, elevamos as diferenças ao quadrado, somamos 64 + 36 + 36 + 4 + 484 = 624 e dividimos por n−1 (4) para obter a variância amostral 156; a raiz quadrada é aproximadamente 12,49 km/h. O pandas usa essa convenção amostral por padrão. A variância fica em (km/h)², enquanto o desvio padrão tem a unidade original. Não interprete o desvio como limite máximo nem como distância exata de cada leitura.
 
 ### Célula 10 — Automatizar os cálculos
 
