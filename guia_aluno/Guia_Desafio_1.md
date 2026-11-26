@@ -414,6 +414,10 @@ As sementes são reiniciadas antes da geração definitiva. O zip combina valore
 
 ### Célula 10 — Validar e gravar os CSV
 
+A célula é longa, mas faz quatro coisas em sequência. No notebook, ela continua sendo uma célula só; aqui ela aparece em partes para facilitar a leitura.
+
+**Parte 1 — A estrutura das tabelas.** Confere se as colunas estão na ordem do esquema, se os IDs não se repetem, se toda chave estrangeira existe na dimensão e se a base tem pelo menos 20.000 linhas.
+
 ```python
 # ---- Regras do guia ----
 assert list(tabela_dim.columns) == COLUNAS_DIMENSAO, "Colunas diferentes do esquema na tabela dimensão"
@@ -422,7 +426,11 @@ assert tabela_dim[COLUNAS_DIMENSAO[0]].is_unique, "ID repetido na tabela dimens�
 assert tabela_fato["leitura_id"].is_unique, "ID repetido na tabela fato"
 assert tabela_fato[COLUNA_FK].isin(tabela_dim[COLUNAS_DIMENSAO[0]]).all(), "Chave estrangeira sem ID na dimensão"
 assert len(tabela_dim) + len(tabela_fato) >= 20_000, "Abaixo do mínimo (20.000 linhas somadas)."
+```
 
+**Parte 2 — Estações, datas e faixas de valores.** Confere se toda estação tem leitura, se as leituras estão em ordem de data, se as coordenadas do Brasil estão dentro do país, se a umidade está na faixa e se só existem as 4 condições do tempo.
+
+```python
 # ---- Regras da documentação do tema ----
 assert tabela_dim["estacao_id"].isin(tabela_fato["estacao_id"]).all(), "Há estação sem nenhuma leitura"
 assert tabela_fato["data_hora"].is_monotonic_increasing, "Leituras fora de ordem cronológica"
@@ -430,16 +438,26 @@ lat_brasil = tabela_dim.loc[tabela_dim["pais"] == "Brasil", "latitude"]
 assert lat_brasil.between(-33, 5).all(), "Latitude do Brasil fora da faixa (-33 a 5)"
 assert tabela_fato["umidade_pct"].between(0, 100).all(), "Umidade fora da faixa (0 a 100)"
 assert set(tabela_fato["condicao_tempo"]) <= set(CONDICOES), "Condição do tempo fora dos 4 valores válidos"
+```
+
+**Parte 3 — As regras do tempo.** Confere se só chove em leituras chuvosas ou de tempestade e se, na média, a tempestade tem menos pressão e mais umidade e vento que o tempo ensolarado.
+
+```python
 com_chuva = tabela_fato["condicao_tempo"].isin(["chuvoso", "tempestade"])
 assert (tabela_fato.loc[com_chuva, "precipitacao_mm"] > 0).all(), "Leitura chuvosa ou de tempestade sem chuva"
 assert (tabela_fato.loc[~com_chuva, "precipitacao_mm"] == 0).all(), "Chuva em leitura ensolarada ou nublada"
+
 medias = tabela_fato.groupby("condicao_tempo")[["pressao_hpa", "umidade_pct", "velocidade_vento_kmh"]].mean()
 assert medias.loc["tempestade", "pressao_hpa"] < medias.loc["ensolarado", "pressao_hpa"], "Tempestade deveria ter pressão menor"
 assert medias.loc["tempestade", "umidade_pct"] > medias.loc["ensolarado", "umidade_pct"], "Tempestade deveria ter umidade maior"
 assert medias.loc["tempestade", "velocidade_vento_kmh"] > medias.loc["ensolarado", "velocidade_vento_kmh"], "Tempestade deveria ter vento maior"
 print("Todas as validações passaram.")
 display(medias.round(1))
+```
 
+**Parte 4 — Gravar e baixar os CSV.** Só chega aqui se todas as regras acima passaram. Grava um arquivo por tabela, lê de volta para conferir e baixa uma cópia.
+
+```python
 # ---- Grava um CSV por tabela, lê de volta para conferir e baixa o arquivo ----
 os.makedirs("bases_geradas", exist_ok=True)
 for nome, df in BASES_GERADAS.items():
