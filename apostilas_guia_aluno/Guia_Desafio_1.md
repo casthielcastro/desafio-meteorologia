@@ -97,21 +97,28 @@ Com o plano pronto, falta preparar o lugar onde o código vai rodar e a planilha
 
 ## 4. Prepare o ambiente e a conexão
 
-**Objetivo:** conectar o Colab à planilha do Google sem expor a credencial.
+**Objetivo:** conectar o notebook (no Colab ou no seu computador) à planilha do Google sem expor a credencial.
 
 Crie um repositório público para os desafios conforme o roteiro do curso (projeto_desafios_tecnicos_ad). Abra o [Google Cloud Console](https://console.cloud.google.com/), crie um projeto e ative Google Sheets API e Google Drive API em APIs e serviços > Biblioteca. Em IAM e administração > Contas de serviço, crie uma conta de serviço, sem conceder papéis amplos desnecessários. Abra Chaves > Adicionar chave > Criar nova chave > JSON. Copie o client_email do JSON. Se a organização bloquear chaves, procure o instrutor.
 
 Abra [sheets.new](https://sheets.new/), nomeie a planilha Desafio_01_Meteorologia, compartilhe como Editor com o client_email da conta de serviço e copie o ID que fica entre /d/ e /edit no endereço da planilha. Abra um notebook novo no [Colab](https://colab.research.google.com/). No painel Secrets (ícone de chave), crie GCP_SA_JSON com o conteúdo completo do JSON e GS_ID com o ID da planilha; habilite o acesso do notebook às duas secrets. Não publique a chave, nem em código, nem em saídas. Trabalhe numa planilha dedicada: o código de envio posterior limpa as abas existentes.
+
+**Onde você vai rodar o notebook?** O código deste guia funciona nos dois lugares. A única diferença é onde ficam guardados a credencial e o ID da planilha:
+
+- **No Colab:** use as Secrets `GCP_SA_JSON` e `GS_ID`, como descrito acima.
+- **No computador (VS Code):** salve o JSON da conta de serviço com o nome `credenciais.json` e crie um arquivo `gs_id.txt` só com o ID da planilha, sem espaços nem aspas. Os dois ficam na mesma pasta do notebook. Escolha como kernel um Python que tenha as bibliotecas instaladas (veja a Célula 01). Antes de usar o Git, crie um arquivo `.gitignore` com os nomes `credenciais.json` e `gs_id.txt`, para a chave não ir para o repositório.
+
+O código descobre sozinho onde está rodando, então você usa o mesmo notebook nos dois casos.
 
 Uma API permite que o código solicite operações ao serviço externo. A conta de serviço identifica quem faz o pedido, mas só consegue editar a planilha quando ela é compartilhada. O gspread encapsula essas chamadas. Não confunda o Colab com Apps Script.
 
 ### Célula 01 — Instalar bibliotecas
 
 ```python
-!pip install -q gspread faker
+%pip install -q gspread faker
 ```
 
-O comando instala gspread, que manipula planilhas, e Faker, que gera exemplos fictícios. O Colab já disponibiliza pandas. Execute as células de cima para baixo; se reiniciar o ambiente, as variáveis desaparecem.
+O comando instala gspread, que manipula planilhas, e Faker, que gera exemplos fictícios. O Colab já disponibiliza pandas. Usei `%pip` no lugar de `!pip` porque ele instala no mesmo Python que está rodando o notebook, e isso vale tanto no Colab quanto no VS Code. Com `!pip` no computador, a biblioteca pode ser instalada em outro Python e dar `ModuleNotFoundError` na célula seguinte. Se isso acontecer, reinicie o kernel. Execute as células de cima para baixo; se reiniciar o ambiente, as variáveis desaparecem.
 
 ### Célula 02 — Autenticar
 
@@ -127,17 +134,37 @@ import pandas as pd
 
 # date, datetime e timedelta são usados para criar e somar datas.
 from datetime import date, datetime, timedelta
-
-from google.colab import files
-# O userdata dá acesso às Secrets do Colab (credencial e ID da planilha).
-from google.colab import userdata
 ```
 
-**Parte 2 — Entrar com a credencial.** Lê a credencial guardada na Secret do Colab, cria a conexão com o Google e mostra o e-mail da conta para confirmar que deu certo.
+**Parte 2 — Descobrir se está no Colab.** Tenta importar as ferramentas do Colab. No Colab isso funciona e `EM_COLAB` fica `True`. No computador esse módulo não existe, o erro é capturado e `EM_COLAB` fica `False`.
+
+```python
+# No Colab, as credenciais ficam nas Secrets. Fora do Colab (ex.: VS Code),
+# o código usa os arquivos credenciais.json (credencial) e gs_id.txt (ID da planilha).
+try:
+    from google.colab import files, userdata
+    EM_COLAB = True
+except ModuleNotFoundError:
+    EM_COLAB = False
+```
+
+**Parte 3 — Função que lê a credencial e o ID.** Cria a função `ler_segredo`, que busca o valor no lugar certo: na Secret, se estiver no Colab, ou no arquivo, se estiver no computador.
+
+```python
+def ler_segredo(nome):
+    # Devolve o valor de um segredo, buscando no lugar certo para cada ambiente.
+    if EM_COLAB:
+        return userdata.get(nome)
+    arquivo = "credenciais.json" if nome == "GCP_SA_JSON" else "gs_id.txt"
+    with open(arquivo, encoding="utf-8") as f:
+        return f.read().strip()
+```
+
+**Parte 4 — Entrar com a credencial.** Lê a credencial, cria a conexão com o Google e mostra o e-mail da conta para confirmar que deu certo.
 
 ```python
 # Lê o conteúdo do JSON da credencial (Secret GCP_SA_JSON) e converte o texto em dicionário.
-info = json.loads(userdata.get("GCP_SA_JSON"))
+info = json.loads(ler_segredo("GCP_SA_JSON"))
 
 # Cria o cliente do gspread autenticado com a service account.
 gc = gspread.service_account_from_dict(info)
@@ -146,17 +173,19 @@ gc = gspread.service_account_from_dict(info)
 print("Conectado como:", info["client_email"])
 ```
 
-userdata.get lê a secret, json.loads converte seu texto em uma estrutura de dados e service_account_from_dict cria o cliente autenticado. A mensagem com o e-mail identifica a conta; ainda não prova que ela tem acesso à planilha. Não imprima o JSON.
+Se você estiver no Colab, `ler_segredo` usa o `userdata.get`. No computador, ela abre o arquivo. Nos dois casos, `json.loads` converte o texto em uma estrutura de dados e `service_account_from_dict` cria o cliente autenticado. A mensagem com o e-mail identifica a conta; ainda não prova que ela tem acesso à planilha. Não imprima o JSON.
+
+> **Ponto de verificação:** aparece "Conectado como:" com o e-mail da conta de serviço. Se aparecer `FileNotFoundError` no computador, confira se `credenciais.json` e `gs_id.txt` estão na mesma pasta do notebook. Se aparecer `ModuleNotFoundError: No module named 'gspread'`, o kernel está usando um Python sem a biblioteca: troque o kernel ou rode a Célula 01 de novo e reinicie.
 
 ### Célula 03 — Abrir a planilha
 
 No notebook, esta é uma célula só; aqui ela aparece em partes para facilitar a leitura.
 
-**Parte 1 — O ID da planilha e o nome da aba.** Busca o ID da planilha na Secret e define o nome que a primeira aba vai receber.
+**Parte 1 — O ID da planilha e o nome da aba.** Busca o ID da planilha (na Secret `GS_ID` ou no arquivo `gs_id.txt`) e define o nome que a primeira aba vai receber.
 
 ```python
 # Lê o ID da planilha guardado na Secret GS_ID.
-SHEET_ID = userdata.get("GS_ID")
+SHEET_ID = ler_segredo("GS_ID")
 
 # Nome da tabela dimensão do tema: será o nome da primeira aba da planilha.
 NOME_TABELA = "estacoes"
@@ -600,10 +629,10 @@ Para entender a Parte 3:
 - `groupby("condicao_tempo")` separa as leituras por condição antes de calcular. Imagine quatro leituras: ensolarado com 8 e 10 km/h, tempestade com 30 e 40 km/h. O groupby forma dois grupos, e o `.mean()` calcula a média de cada um: 9 para ensolarado e 35 para tempestade. Na base completa acontece o mesmo, só que com quatro grupos e três colunas.
 - `medias.loc["tempestade", "pressao_hpa"]` lê um valor dessa tabela de médias: a linha da tempestade, na coluna da pressão.
 
-**Parte 4 — Gravar e baixar os CSV.** Só chega aqui se todas as regras acima passaram. Grava um arquivo por tabela, lê de volta para conferir e baixa uma cópia.
+**Parte 4 — Gravar e baixar os CSV.** Só chega aqui se todas as regras acima passaram. Grava um arquivo por tabela e lê de volta para conferir. No Colab, também baixa uma cópia para o seu computador. No computador não precisa baixar, porque os arquivos já ficam na pasta `bases_geradas`, ao lado do notebook.
 
 ```python
-# ---- Grava um CSV por tabela, lê de volta para conferir e baixa o arquivo ----
+# ---- Grava um CSV por tabela, lê de volta para conferir e baixa o arquivo (só no Colab) ----
 os.makedirs("bases_geradas", exist_ok=True)
 for nome, df in BASES_GERADAS.items():
     caminho = f"bases_geradas/{nome}.csv"
@@ -611,7 +640,8 @@ for nome, df in BASES_GERADAS.items():
     lido = pd.read_csv(caminho)
     assert len(lido) == len(df) and list(lido.columns) == list(df.columns), f"CSV diferente em {nome}"
     print(nome + ".csv ->", len(lido), "linhas")
-    files.download(caminho)
+    if EM_COLAB:
+        files.download(caminho)
 ```
 
 **Ajuste recomendado em relação ao notebook original:** sua verificação de umidade aceita 0 a 100%, mas o esquema do tema e o gerador definem 20 a 100%. Substitua a linha de validação por:

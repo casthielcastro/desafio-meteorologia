@@ -41,7 +41,14 @@ Cada leitura tem seu próprio ID e pertence a uma estação. Uma estação pode 
 
 **Objetivo:** colocar as duas tabelas oficiais dentro do notebook e confirmar que chegaram inteiras.
 
-Crie um notebook no Google Colab. Use células de texto para a pergunta, leituras e decisões; use células de código para os cálculos. Execute de cima para baixo. O notebook do projeto está dividido em duas partes.
+Crie um notebook no Google Colab ou no VS Code. Use células de texto para a pergunta, leituras e decisões; use células de código para os cálculos. Execute de cima para baixo. O notebook do projeto está dividido em duas partes.
+
+**Onde você vai rodar o notebook?** O código deste guia funciona nos dois lugares. A única diferença é de onde os arquivos CSV são lidos:
+
+- **No Colab:** o notebook conecta o Google Drive e lê os CSV da pasta `Colab Notebooks/desafios/dados`. Se os arquivos não estiverem lá, abre uma janela para você enviá-los.
+- **No computador (VS Code):** o notebook lê os CSV direto da pasta do repositório, `bases_dados/06-servico-meteorologico`, que fica uma pasta acima do notebook. Você não precisa enviar nada. Escolha como kernel um Python que tenha pandas, seaborn e matplotlib instalados (`%pip install pandas seaborn matplotlib` resolve).
+
+O código descobre sozinho onde está rodando, então você usa o mesmo notebook nos dois casos.
 
 > **Atenção:** o notebook do projeto nasceu de um modelo usado por vários temas do curso. Por isso, alguns comentários do código trazem exemplos de outro tema, como `# ex.: "livros"` ou `# ex.: "emprestimos"`, e citam passos do roteiro, como "Passo 1". Esses comentários não mudam nada no resultado. No nosso tema, os nomes certos são sempre estacoes, leituras e estacao_id.
 
@@ -58,12 +65,17 @@ from pathlib import Path           # manipula caminhos de arquivos e pastas
 import shutil                      # manipula arquivos e pastas (ex.: mover, copiar, apagar)
 ```
 
-**Parte 2 — Ferramentas do Colab.** Permitem conectar o Google Drive e enviar arquivos do seu computador para o Colab.
+**Parte 2 — Ferramentas do Colab (se existirem).** Tenta importar as ferramentas que conectam o Google Drive e enviam arquivos para o Colab. No Colab isso funciona e `EM_COLAB` fica `True`. No computador esse módulo não existe, o erro é capturado e `EM_COLAB` fica `False`, então o código segue sem elas.
 
 ```python
-# Estas linhas servem para trabalhar no Google Colab (conectar ao Drive e enviar arquivos)
-from google.colab import drive     # conecta o Google Drive ao Colab (para ler e salvar arquivos)
-from google.colab import files     # (files) envia arquivos do seu computador para o Colab
+# Estas linhas servem para trabalhar no Google Colab (conectar ao Drive e enviar arquivos).
+# Fora do Colab (ex.: VS Code) elas não existem, então o código segue sem elas.
+try:
+    from google.colab import drive     # conecta o Google Drive ao Colab (para ler e salvar arquivos)
+    from google.colab import files     # (files) envia arquivos do seu computador para o Colab
+    EM_COLAB = True
+except ModuleNotFoundError:
+    EM_COLAB = False
 ```
 
 **Parte 3 — Análise e gráficos.** O pandas faz as tabelas e as contas; o seaborn e o matplotlib desenham os gráficos.
@@ -84,40 +96,42 @@ sns.set_theme(style="whitegrid")            # deixa todos os gráficos com um vi
 plt.rcParams["figure.figsize"] = (8, 6)    # tamanho padrão dos gráficos (largura, altura)
 ```
 
-Pandas organiza tabelas e calcula indicadores; seaborn e matplotlib desenham gráficos; Path representa caminhos; drive e files permitem acessar arquivos no Colab. O notebook silencia avisos globalmente: durante a investigação de problemas, é preferível retirar essa linha para enxergar mensagens úteis.
+Pandas organiza tabelas e calcula indicadores; seaborn e matplotlib desenham gráficos; Path representa caminhos; drive e files permitem acessar arquivos no Colab (no computador eles não são usados). O notebook silencia avisos globalmente: durante a investigação de problemas, é preferível retirar essa linha para enxergar mensagens úteis.
 
 ### Célula 02 — Carregar CSV
 
 A célula é longa, mas faz cinco coisas em sequência. No notebook, ela continua sendo uma célula só; aqui ela aparece em partes para facilitar a leitura.
 
-**Parte 1 — Nomes das tabelas e conexão com o Drive.** Define o nome das duas tabelas, que precisa ser igual ao nome dos arquivos CSV, e conecta o Google Drive ao Colab.
+**Parte 1 — Nomes das tabelas.** Define o nome das duas tabelas, que precisa ser igual ao nome dos arquivos CSV.
 
 ```python
 # Nomes das tabelas do seu tema (veja a tabela acima), iguais aos nomes dos arquivos CSV.
 NOME_TABELA_DIMENSAO = "estacoes"   # ex.: "livros"
 NOME_TABELA_FATO = "leituras"           # ex.: "emprestimos"
-
-# ---------- 1) Conectando ao Google Drive ----------
-drive.mount("/content/drive")      # vai pedir autorização na primeira vez
 ```
 
-**Parte 2 — Onde os arquivos ficam.** Aponta a pasta do Drive em que os CSV são guardados, cria essa pasta se ela não existir e monta o caminho completo de cada arquivo.
+**Parte 2 — Onde os arquivos ficam.** No Colab, conecta o Google Drive e usa a pasta do Drive em que os CSV são guardados (cria a pasta se ela não existir). No computador, usa a pasta do repositório. Depois monta o caminho completo de cada arquivo.
 
 ```python
-# ---------- 2) Dizendo onde os arquivos estão guardados ----------
-pasta_dados = Path("/content/drive/MyDrive/Colab Notebooks/desafios/dados")   # pasta onde a base fica guardada no Drive
-pasta_dados.mkdir(parents=True, exist_ok=True)                                # cria a pasta "dados" se faltar
+# ---------- 1) Dizendo onde os arquivos estão guardados ----------
+if EM_COLAB:
+    drive.mount("/content/drive")      # vai pedir autorização na primeira vez
+    pasta_dados = Path("/content/drive/MyDrive/Colab Notebooks/desafios/dados")   # pasta onde a base fica guardada no Drive
+    pasta_dados.mkdir(parents=True, exist_ok=True)                                # cria a pasta "dados" se faltar
+else:
+    # Fora do Colab, lê direto da pasta do repositório (relativa à pasta deste notebook).
+    pasta_dados = Path("../bases_dados/06-servico-meteorologico")
 
 # O "/" junta a pasta com o nome do arquivo (o nome vem da variável de cada tabela).
 caminho_dimensao = pasta_dados / f"{NOME_TABELA_DIMENSAO}.csv"
 caminho_fato = pasta_dados / f"{NOME_TABELA_FATO}.csv"
 ```
 
-**Parte 3 — Enviar os arquivos, se faltar algum.** Se um dos CSV não estiver na pasta, abre a janela para você escolher os arquivos e salva cada um com o nome certo. Um arquivo com nome que não combina com nenhuma tabela é ignorado.
+**Parte 3 — Enviar os arquivos, se faltar algum (só no Colab).** Se um dos CSV não estiver na pasta, abre a janela para você escolher os arquivos e salva cada um com o nome certo. Um arquivo com nome que não combina com nenhuma tabela é ignorado. No computador essa parte é pulada.
 
 ```python
-# ---------- 3) Se faltar algum arquivo, envia os dois de uma vez e o código separa ----------
-if not caminho_dimensao.exists() or not caminho_fato.exists():
+# ---------- 2) No Colab, se faltar algum arquivo, envia os dois de uma vez e o código separa ----------
+if EM_COLAB and (not caminho_dimensao.exists() or not caminho_fato.exists()):
     print(f"Selecione os arquivos CSV ({NOME_TABELA_DIMENSAO} e {NOME_TABELA_FATO}). Pode escolher os dois de uma vez:")
     enviados = files.upload()                                  # abre o seletor; aceita vários arquivos
 
@@ -132,19 +146,19 @@ if not caminho_dimensao.exists() or not caminho_fato.exists():
             print(f"Ignorado: {nome_enviado} (o nome não contém '{NOME_TABELA_DIMENSAO}' nem '{NOME_TABELA_FATO}')")
 ```
 
-**Parte 4 — Conferir se os dois arquivos estão lá.** Antes de ler, confere se os dois CSV estão na pasta. Se faltar algum, para com uma mensagem dizendo qual.
+**Parte 4 — Conferir se os dois arquivos estão lá.** Antes de ler, confere se os dois CSV estão na pasta. Se faltar algum, para com uma mensagem dizendo qual arquivo e qual pasta.
 
 ```python
-# Confere se os dois arquivos estão no Drive antes de ler.
+# Confere se os dois arquivos existem antes de ler.
 for caminho in [caminho_dimensao, caminho_fato]:
     if not caminho.exists():
-        raise FileNotFoundError(f"Falta o arquivo {caminho.name}. Execute a célula de novo e envie-o.")
+        raise FileNotFoundError(f"Falta o arquivo {caminho.name} em {pasta_dados}.")
 ```
 
 **Parte 5 — Ler os dois arquivos.** Transforma cada CSV numa tabela do pandas (DataFrame) e mostra quantas linhas cada uma tem.
 
 ```python
-# ---------- 4) Lendo os dois arquivos ----------
+# ---------- 3) Lendo os dois arquivos ----------
 df_dimensao = pd.read_csv(caminho_dimensao)
 df_fato = pd.read_csv(caminho_fato)
 
@@ -152,9 +166,9 @@ print(NOME_TABELA_DIMENSAO, "->", len(df_dimensao), "linhas")
 print(NOME_TABELA_FATO, "->", len(df_fato), "linhas")
 ```
 
-Autorize o acesso ao Drive e envie os dois arquivos oficiais se solicitado. Se já houver arquivos com os mesmos nomes na pasta, o código os reaproveita: confira a origem antes de executar para não misturar com o Desafio 1. read_csv transforma cada arquivo em DataFrame, uma tabela manipulável pelo Python.
+No Colab, autorize o acesso ao Drive e envie os dois arquivos oficiais se solicitado. No computador, não precisa fazer nada, porque os arquivos são lidos direto da pasta do repositório. Se já houver arquivos com os mesmos nomes na pasta, o código os reaproveita: confira a origem antes de executar para não misturar com o Desafio 1. read_csv transforma cada arquivo em DataFrame, uma tabela manipulável pelo Python.
 
-> **Ponto de verificação:** aparecem "estacoes -> 10050 linhas" e "leituras -> 62000 linhas". Se FileNotFoundError aparecer, confira nomes e pasta; se houver apenas uma coluna, verifique o separador do arquivo.
+> **Ponto de verificação:** aparecem "estacoes -> 10050 linhas" e "leituras -> 62000 linhas". Se FileNotFoundError aparecer, confira nomes e pasta (no computador, o caminho `../bases_dados/06-servico-meteorologico` conta a partir da pasta onde o notebook está salvo); se houver apenas uma coluna, verifique o separador do arquivo.
 
 ### Células 03 e 04 — Explorar as tabelas
 
